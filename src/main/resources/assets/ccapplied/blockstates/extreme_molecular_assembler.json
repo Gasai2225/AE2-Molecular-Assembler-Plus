@@ -1,0 +1,7 @@
+{
+  "multipart": [
+    { "apply": { "model": "ccapplied:block/extreme_molecular_assembler" } },
+    { "when": { "powered": "true" },
+      "apply": { "model": "ae2:block/molecular_assembler_lights" } }
+  ]
+}
