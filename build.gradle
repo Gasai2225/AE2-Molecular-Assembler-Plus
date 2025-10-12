@@ -17,6 +17,21 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+mixin {
+    add sourceSets.main, "ccapplied.refmap.json"
+    config "ccapplied.mixins.json"
+
+    debug.verbose = true
+    debug.export  = true
+}
+
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
     copyIdeResources = true
@@ -28,6 +43,7 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
 
+
             mods {
                 "${mod_id}" {
                     source sourceSets.main
@@ -37,6 +53,8 @@ minecraft {
 
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
+            property 'mixin.debug', 'true'
+            args "-mixin.config=ccapplied.mixins.json"
         }
 
         server {
@@ -90,6 +108,8 @@ dependencies {
     // Extended Crafting
     implementation fg.deobf("curse.maven:extended-crafting-268387:6880322")
     implementation fg.deobf("curse.maven:cucumber-272335:6880321")
+
+    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -140,6 +160,13 @@ publishing {
         maven {
             url "file://${project.projectDir}/mcmodsrepo"
         }
+    }
+}
+jar {
+    manifest {
+        attributes(
+                "MixinConfigs": "ccapplied.mixins.json"
+        )
     }
 }
 

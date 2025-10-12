@@ -1,10 +1,8 @@
 package com.gasai.ccapplied.core.registry;
 
 import com.gasai.ccapplied.CCApplied;
-import com.gasai.ccapplied.common.item.ExtremePatternItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -19,9 +17,14 @@ public final class ModItems {
 
     public static final RegistryObject<Item> EXTREME_PATTERN = ITEMS.register(
             "extreme_pattern",
-            () -> new ExtremePatternItem(new Item.Properties()
-                    .stacksTo(64)
-                    .rarity(Rarity.RARE)));
+            () -> new Item(new Item.Properties().stacksTo(64)) // пустой — стакается до 64
+    );
+
+    public static final RegistryObject<Item> ENCODED_EXTREME_PATTERN = ITEMS.register(
+            "encoded_extreme_pattern",
+            () -> new com.gasai.ccapplied.common.item.ExtremePatternEncodedItem(
+                    new Item.Properties().stacksTo(1).rarity(Rarity.RARE)) // закодированный — по 1
+    );
 
     public static final RegistryObject<Item> EXTREME_ASSEMBLER_ITEM = ITEMS.register(
             "extreme_molecular_assembler",

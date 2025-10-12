@@ -16,10 +16,16 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<ExtremeMolecularAssemblerBlockEntity>> EXTREME_ASSEMBLER_BE =
             BLOCK_ENTITIES.register("extreme_molecular_assembler",
-                    () -> BlockEntityType.Builder.of(
-                            ExtremeMolecularAssemblerBlockEntity::new,
-                            ModBlocks.EXTREME_ASSEMBLER.get()
-                    ).build(null));
+                    () -> {
+                        var type = BlockEntityType.Builder.of(
+                                ExtremeMolecularAssemblerBlockEntity::new,
+                                ModBlocks.EXTREME_ASSEMBLER.get()
+                        ).build(null);
+                        // <-- прокидываем тип в статическое поле BE,
+                        // чтобы конструктор мог вызвать super(TYPE, ...)
+                        ExtremeMolecularAssemblerBlockEntity.TYPE = type;
+                        return type;
+                    });
 
     public static void register(IEventBus bus) {
         BLOCK_ENTITIES.register(bus);

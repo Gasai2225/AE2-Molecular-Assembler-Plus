@@ -16,22 +16,18 @@ import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.util.AECableType;
 import appeng.capabilities.Capabilities;
-import com.gasai.ccapplied.client.gui.menu.ExtremeMolecularAssemblerMenu;
 import com.gasai.ccapplied.common.core.ExtremePatternDetails;
-import com.gasai.ccapplied.core.registry.ModBlockEntities;
 import com.gasai.ccapplied.core.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -48,7 +44,7 @@ import java.util.Queue;
 public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
         implements ICraftingMachine, IGridTickable, MenuProvider, IInWorldGridNodeHost {
 
-    /* ======================= AE2 Integration ======================= */
+    public static net.minecraft.world.level.block.entity.BlockEntityType<ExtremeMolecularAssemblerBlockEntity> TYPE;
 
     public int getCurrentTotalTicks() { return currentTotalTicks; }
     public int getCurrentTicksLeft()  { return currentTicksLeft; }
@@ -66,7 +62,6 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
                     boolean newPowered = false;
                     var grid = node.getGrid();
                     if (grid != null && node.isPowered()) {
-                        // как в MA: симулируем маленький дрен
                         newPowered = grid.getEnergyService().extractAEPower(
                                 1, appeng.api.config.Actionable.SIMULATE, appeng.api.config.PowerMultiplier.CONFIG
                         ) > 0.0001;
@@ -74,7 +69,6 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
 
                     if (newPowered != owner.isPowered) {
                         owner.isPowered = newPowered;
-                        // обновим блокстейт (POWERED)
                         var st = owner.level.getBlockState(owner.worldPosition);
                         if (st.hasProperty(com.gasai.ccapplied.common.block.ExtremeMolecularAssemblerBlock.POWERED)) {
                             owner.level.setBlock(owner.worldPosition,
@@ -88,13 +82,17 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
     private final IManagedGridNode node = GridHelper.createManagedNode(this, LISTENER);
 
     /* ======================= Inventories ======================= */
-    // 0..80 — входная 9×9 сетка (визуально/остатки)
     private final ItemStackHandler gridInv = new ItemStackHandler(81) {
-        @Override
-        protected void onContentsChanged(int slot) { setChanged(); }
+        @Override protected void onContentsChanged(int slot) { setChanged(); }
+        @Override public int getSlotLimit(int slot) { return 1; }
     };
 
-    // 0 — слот шаблона (наш extreme pattern)
+    private final ItemStackHandler outputInv = new ItemStackHandler(1) {
+        @Override public boolean isItemValid(int slot, ItemStack stack) { return false; }
+        @Override protected void onContentsChanged(int slot) { setChanged(); }
+    };
+    public ItemStackHandler getOutputInv() { return outputInv; }
+
     private final ItemStackHandler patternInv = new ItemStackHandler(1) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -103,22 +101,79 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            // убрали шаблон — отменяем все активные задачи и рефандим входы
+            recalcCurrentPattern();
             if (getStackInSlot(0).isEmpty()) {
                 cancelAllAndRefund();
             }
         }
     };
 
-    // 0..4 — слоты апгрейдов (Speed Card)
+    // кэш плана
+    private ItemStack lastPatternStack = ItemStack.EMPTY;
+    private ExtremePatternDetails currentPattern = null;
+
+    private ItemStack addToOutputBuffer(ItemStack stack) {
+        if (stack.isEmpty()) return ItemStack.EMPTY;
+        return ItemHandlerHelper.insertItem(outputInv, stack, false);
+    }
+
+    private void recalcCurrentPattern() {
+        var st = patternInv.getStackInSlot(0);
+        if (ItemStack.isSameItemSameTags(st, lastPatternStack)) return;
+
+        lastPatternStack = st.copy();
+        currentPattern = null;
+
+        if (!st.isEmpty() && level != null) {
+            var d = appeng.api.crafting.PatternDetailsHelper.decodePattern(st, level, false);
+            if (d instanceof com.gasai.ccapplied.common.core.ExtremePatternDetails epd) {
+                currentPattern = epd;
+            }
+        }
+    }
+
+    public ExtremePatternDetails getCurrentPattern() {
+        if (currentPattern == null) recalcCurrentPattern();
+        return currentPattern;
+    }
+    public ExtremePatternDetails getCurrentPatternDetails() { return getCurrentPattern(); }
+
+    private final int[] enabledMask = new int[3];
+
+    public int getEnabledMaskPart(int i) {
+        return (i >= 0 && i < 3) ? enabledMask[i] : 0;
+    }
+
+    private void updateEnabledMask() {
+        enabledMask[0] = enabledMask[1] = enabledMask[2] = 0;
+        ExtremePatternDetails plan = getCurrentPattern();
+        if (plan == null) return;
+
+        for (int i = 0; i < 81; i++) {
+            if (plan.isSlotEnabled(i)) {
+                int part = i / 27;
+                int bit  = i % 27;
+                enabledMask[part] |= (1 << bit);
+            }
+        }
+    }
+    // 0..4 — апгрейды
     private final ItemStackHandler upgrades = new ItemStackHandler(5) {
         @Override
-        public boolean isItemValid(int slot, ItemStack stack) {
-            return isSpeedCard(stack);
-        }
+        public boolean isItemValid(int slot, ItemStack stack) { return isSpeedCard(stack); }
+        @Override
+        public int getSlotLimit(int slot) { return 1; }
         @Override
         protected void onContentsChanged(int slot) { setChanged(); }
     };
+
+    public boolean isItemValidForGrid(int slot, ItemStack stack) {
+        if (stack.isEmpty() || slot < 0 || slot >= 81 || level == null) return false;
+        var epd = getCurrentPatternDetails();
+        if (epd == null) return false;
+        var key = AEItemKey.of(stack);
+        return key != null && epd.isSlotEnabled(slot) && epd.isValidForSlot(slot, key, level);
+    }
 
     private static boolean isSpeedCard(ItemStack stack) {
         if (stack.isEmpty()) return false;
@@ -131,13 +186,12 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
 
     /* ======================= Job Queue & Progress ======================= */
 
-    // прогресс текущей головы очереди
     private int currentTotalTicks = 0;
     private int currentTicksLeft = 0;
 
     private static final class Task {
         final GenericStack[] outputs;
-        final ItemStack[] reservedInputs; // на случай отмены — возвращаем
+        final ItemStack[] reservedInputs;
         final Direction eject;
         int ticks;
         Task(GenericStack[] outputs, ItemStack[] reservedInputs, Direction eject, int time) {
@@ -151,9 +205,7 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
     private final Queue<Task> queue = new ArrayDeque<>();
 
     public ExtremeMolecularAssemblerBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.EXTREME_ASSEMBLER_BE.get(), pos, state);
-
-        // Конфиг ноды — ДО create()
+        super(TYPE, pos, state);
         node.setVisualRepresentation(state.getBlock());
         node.setExposedOnSides(EnumSet.allOf(Direction.class));
         node.setIdlePowerUsage(15.0);
@@ -179,91 +231,57 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
 
     /* ======================= IInWorldGridNodeHost ======================= */
 
-    @Override
-    public IGridNode getGridNode(Direction dir) {
-        return node.getNode();
-    }
-
-    @Override
-    public AECableType getCableConnectionType(Direction dir) {
-        return AECableType.COVERED;
-    }
+    @Override public IGridNode getGridNode(Direction dir) { return node.getNode(); }
+    @Override public AECableType getCableConnectionType(Direction dir) { return AECableType.COVERED; }
 
     /* ======================= MenuProvider (GUI) ======================= */
 
-    @Override
-    public Component getDisplayName() {
-        return Component.literal("Extreme Molecular Assembler");
-    }
-
-    @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-        return new ExtremeMolecularAssemblerMenu(id, inv, this);
+    @Override public Component getDisplayName() { return Component.literal("Extreme Molecular Assembler"); }
+    @Override public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+        return new com.gasai.ccapplied.client.gui.menu.ExtremeMolecularAssemblerMenu(id, inv, this);
     }
 
     /* ======================= ICraftingMachine ======================= */
 
-    @Override
-    public PatternContainerGroup getCraftingMachineInfo() {
-        return PatternContainerGroup.nothing();
-    }
+    @Override public PatternContainerGroup getCraftingMachineInfo() { return PatternContainerGroup.nothing(); }
 
     @Override
-    public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] table, Direction where) {
-        if (!(patternDetails instanceof ExtremePatternDetails epd)) return false;
+    public boolean pushPattern(IPatternDetails pd, KeyCounter[] table, Direction where) {
+        if (!(pd instanceof ExtremePatternDetails epd)) return false;
 
-        // Визуальная раскладка + сбор входов для возможного рефанда
-        ItemStack[] reserved = fillGridFromKeyCountersAndCollect(table);
-
-        // Время с учётом ускорителей (простая шкала): base / (1 + cards)
-        int time = Math.max(1, epd.getCraftTime() / Math.max(1, 1 + getInstalledSpeedCards()));
-
-        // если это первая задача — устанавливаем базовый прогресс
-        if (queue.isEmpty()) {
-            currentTotalTicks = time;
-            currentTicksLeft = time;
+        // Визуально заполняем сетку из раскладки 9×9 по 1 предмету в ячейку.
+        for (int i = 0; i < gridInv.getSlots(); i++) gridInv.setStackInSlot(i, ItemStack.EMPTY);
+        var layout = epd.getLayout81();
+        var reserved = new ArrayList<ItemStack>(layout.length);
+        for (int i = 0; i < Math.min(layout.length, 81); i++) {
+            var is = layout[i];
+            if (is != null && !is.isEmpty()) {
+                ItemStack one = is.copy(); one.setCount(1);
+                gridInv.setStackInSlot(i, one.copy());
+                reserved.add(one.copy());
+            }
         }
 
-        queue.add(new Task(epd.getOutputs(), reserved, where, time));
+        int time = Math.max(1, epd.getCraftTime());
+        if (queue.isEmpty()) {
+            currentTotalTicks = time;
+            currentTicksLeft  = time;
+        }
+        queue.add(new Task(epd.getOutputs(), reserved.toArray(ItemStack[]::new), where, time));
         setChanged();
         wakeIfPossible();
         return true;
     }
 
-    private ItemStack[] fillGridFromKeyCountersAndCollect(KeyCounter[] table) {
-        // Очистим визуальную сетку
-        for (int i = 0; i < gridInv.getSlots(); i++) gridInv.setStackInSlot(i, ItemStack.EMPTY);
-
-        if (table == null) return new ItemStack[0];
-
-        var reserved = new ArrayList<ItemStack>();
-
-        // Берём ровно по ОДНОМУ предмету с каждого занятого слота (0..80)
-        int maxSlots = Math.min(81, table.length);
-        for (int slot = 0; slot < maxSlots; slot++) {
-            var kc = table[slot];
-            if (kc == null || kc.isEmpty()) continue;
-
-            // Выбираем первый доступный ключ (AEItemKey) и берём 1 шт. (для 1 крафта)
-            var it = kc.iterator();
-            while (it.hasNext()) {
-                var entry = it.next();
-                var key = entry.getKey();
-                if (key instanceof AEItemKey itemKey) {
-                    // 1 штука на слот
-                    ItemStack one = itemKey.toStack(1);
-                    if (!one.isEmpty()) {
-                        // визуально положим 1 предмет
-                        gridInv.setStackInSlot(slot, one.copy());
-                        // и зарезервируем 1 предмет для возможного рефанда
-                        reserved.add(one.copy());
-                    }
-                    break; // НЕ забираем больше из этого KeyCounter — только 1 на слот!
-                }
-            }
-        }
-
-        return reserved.toArray(ItemStack[]::new);
+    private double getSpeedMultiplier() {
+        return switch (getInstalledSpeedCards()) {
+            case 0 -> 1.0;
+            case 1 -> 1.3;
+            case 2 -> 1.7;
+            case 3 -> 2.0;
+            case 4 -> 2.5;
+            default -> 5.0;
+        };
     }
 
     private int getInstalledSpeedCards() {
@@ -285,7 +303,6 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
 
     @Override
     public boolean acceptsPlans() {
-        // только если нет задач и сетка пуста
         boolean gridEmpty = true;
         for (int i = 0; i < gridInv.getSlots(); i++) {
             if (!gridInv.getStackInSlot(i).isEmpty()) { gridEmpty = false; break; }
@@ -298,111 +315,161 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
     /* ======================= IGridTickable ======================= */
 
     @Override
-    public TickingRequest getTickingRequest(IGridNode gridNode) {
-        boolean hasWork = !queue.isEmpty();
-        return new TickingRequest(hasWork ? 1 : 20, 40, !hasWork, false);
+    public TickingRequest getTickingRequest(IGridNode node) {
+        boolean hasWork = !queue.isEmpty() || canStartManualJob();
+        return new TickingRequest(1, 40, !hasWork, false);
+    }
+
+    private boolean canStartManualJob() {
+        var plan = getCurrentPatternDetails();
+        if (plan == null) return false;
+
+        for (int slot = 0; slot < 81; slot++) {
+            if (!plan.isSlotEnabled(slot)) continue;
+            var st  = gridInv.getStackInSlot(slot);
+            var key = AEItemKey.of(st);
+            if (st.isEmpty() || key == null || !plan.isValidForSlot(slot, key, getLevel())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void tryStartManualJob() {
+        var plan = getCurrentPatternDetails();
+        if (plan == null || !canStartManualJob()) return;
+
+        var reserved = new java.util.ArrayList<ItemStack>(81);
+        for (int slot = 0; slot < 81; slot++) {
+            if (!plan.isSlotEnabled(slot)) continue;
+            var st = gridInv.getStackInSlot(slot);
+            var one = st.split(1);
+            reserved.add(one);
+            gridInv.setStackInSlot(slot, st.isEmpty() ? ItemStack.EMPTY : st);
+        }
+        setChanged();
+
+        int time = Math.max(1, plan.getCraftTime());
+        queue.add(new Task(plan.getOutputs(), reserved.toArray(ItemStack[]::new), null, time));
+        wakeIfPossible();
     }
 
     @Override
     public TickRateModulation tickingRequest(IGridNode gridNode, int ticksSinceLastCall) {
-        if (level == null || level.isClientSide) return TickRateModulation.SAME;
+        if (getLevel() == null || getLevel().isClientSide) {
+            return TickRateModulation.SAME;
+        }
 
         Task t = queue.peek();
+
         if (t == null) {
-            currentTotalTicks = 0;
-            currentTicksLeft = 0;
-            return TickRateModulation.SLEEP;
+            tryStartManualJob();
+            t = queue.peek();
+
+            if (t == null) {
+                currentTotalTicks = 0;
+                currentTicksLeft  = 0;
+                return TickRateModulation.SLEEP;
+            }
+
+            currentTotalTicks = Math.max(1, t.ticks);
+            currentTicksLeft  = t.ticks;
+            return TickRateModulation.SAME;
         }
 
         int delta = Math.max(1, ticksSinceLastCall);
-        t.ticks -= delta;
+        int work  = (int) Math.ceil(delta * getSpeedMultiplier());
+        t.ticks -= work;
+        if (t.ticks < 0) t.ticks = 0;
+        currentTicksLeft = t.ticks;
 
-        if (currentTotalTicks <= 0) currentTotalTicks = Math.max(1, t.ticks + delta);
-        currentTicksLeft = Math.max(0, t.ticks);
-
-        if (t.ticks > 0) return TickRateModulation.SAME;
-
-        // Выпуск результата
-        ejectOutputs(t.outputs, t.eject);
-
-        // Очистим визуальную сетку
-        for (int i = 0; i < gridInv.getSlots(); i++) gridInv.setStackInSlot(i, ItemStack.EMPTY);
-
-        // задача выполнена — входы не рефандим
-        queue.poll();
-
-        // Переключим прогресс на следующую задачу (если есть)
-        if (!queue.isEmpty()) {
-            var nxt = queue.peek();
-            currentTotalTicks = Math.max(1, nxt.ticks);
-            currentTicksLeft = nxt.ticks;
-        } else {
-            currentTotalTicks = 0;
-            currentTicksLeft = 0;
+        if (t.ticks > 0) {
+            return TickRateModulation.SAME;
         }
 
-        setChanged();
-        return queue.isEmpty() ? TickRateModulation.SLEEP : TickRateModulation.SAME;
+        pushOutputsOrBuffer(t.outputs, t.eject);
+
+        for (int i = 0; i < gridInv.getSlots(); i++) {
+            gridInv.setStackInSlot(i, ItemStack.EMPTY);
+        }
+        queue.poll();
+
+        if (!queue.isEmpty()) {
+            Task nxt = queue.peek();
+            currentTotalTicks = Math.max(1, nxt.ticks);
+            currentTicksLeft  = nxt.ticks;
+            setChanged();
+            return TickRateModulation.SAME;
+        } else {
+            currentTotalTicks = 0;
+            currentTicksLeft  = 0;
+            setChanged();
+            return TickRateModulation.SLEEP;
+        }
     }
 
     /* ======================= Выдача результата ======================= */
 
-    private void ejectOutputs(GenericStack[] outputs, Direction dir) {
+    private void pushOutputsOrBuffer(GenericStack[] outputs, Direction dir) {
         if (outputs == null || outputs.length == 0) return;
-        Direction d = (dir == null) ? Direction.UP : dir;
-        BlockPos targetPos = worldPosition.relative(d);
-        var be = level.getBlockEntity(targetPos);
 
-        // 1) Пытаемся положить в соседний инвентарь
-        if (be != null) {
-            var cap = be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER, d.getOpposite());
-            if (cap.isPresent()) {
-                IItemHandler inv = cap.orElse(null);
-                if (inv != null) {
-                    for (GenericStack gs : outputs) {
-                        if (gs.what() instanceof AEItemKey itemKey) {
-                            var stack = itemKey.toStack((int) gs.amount());
-                            if (stack.isEmpty()) continue;
-                            stack = ItemHandlerHelper.insertItem(inv, stack, false);
-                            if (!stack.isEmpty()) {
-                                Containers.dropItemStack(level, targetPos.getX() + 0.5,
-                                        targetPos.getY() + 0.5, targetPos.getZ() + 0.5, stack);
-                            }
-                        }
-                    }
-                    return;
-                }
-            }
-        }
-
-        // 2) Иначе — дропаем в мир
         for (GenericStack gs : outputs) {
-            if (gs.what() instanceof AEItemKey itemKey) {
-                var stack = itemKey.toStack((int) gs.amount());
-                if (!stack.isEmpty()) {
-                    Containers.dropItemStack(level,
-                            targetPos.getX() + 0.5,
-                            targetPos.getY() + 0.5,
-                            targetPos.getZ() + 0.5,
-                            stack);
-                }
+            if (!(gs.what() instanceof AEItemKey itemKey)) continue;
+
+            ItemStack todo = itemKey.toStack((int) gs.amount());
+            if (todo.isEmpty()) continue;
+
+            todo = tryPushToNeighbor(todo, dir);
+            if (!todo.isEmpty()) todo = addToOutputBuffer(todo);
+            if (!todo.isEmpty()) {
+                todo = tryPushToNeighbor(todo, null);
+                if (!todo.isEmpty()) addToOutputBuffer(todo);
             }
         }
+
+        setChanged();
+    }
+
+    private ItemStack tryPushToNeighbor(ItemStack stack, Direction preferred) {
+        if (stack.isEmpty()) return ItemStack.EMPTY;
+
+        if (preferred != null) {
+            stack = pushToSide(stack, preferred);
+            if (stack.isEmpty()) return ItemStack.EMPTY;
+        }
+
+        for (Direction d : Direction.values()) {
+            stack = pushToSide(stack, d);
+            if (stack.isEmpty()) break;
+        }
+        return stack;
+    }
+
+    private ItemStack pushToSide(ItemStack stack, Direction side) {
+        if (stack.isEmpty()) return ItemStack.EMPTY;
+        BlockPos targetPos = worldPosition.relative(side);
+        BlockEntity be = getLevel().getBlockEntity(targetPos);
+        if (be == null) return stack;
+
+        var cap = be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER, side.getOpposite());
+        if (!cap.isPresent()) return stack;
+
+        IItemHandler inv = cap.orElse(null);
+        if (inv == null) return stack;
+
+        return ItemHandlerHelper.insertItem(inv, stack, false);
     }
 
     /* ======================= Cancel & Refund ======================= */
 
     private void cancelAllAndRefund() {
-        // вернём входы всех НЕвыполненных задач
         while (!queue.isEmpty()) {
             Task t = queue.poll();
             if (t != null && t.reservedInputs != null) {
                 refundInputs(t.reservedInputs);
             }
         }
-        // чистим визуальную сетку
         for (int i = 0; i < gridInv.getSlots(); i++) gridInv.setStackInSlot(i, ItemStack.EMPTY);
-        // сброс прогресса
         currentTotalTicks = 0;
         currentTicksLeft = 0;
         setChanged();
@@ -410,61 +477,41 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
 
     private void refundInputs(ItemStack[] inputs) {
         if (inputs == null || inputs.length == 0) return;
-        Direction d = Direction.UP;
-        BlockPos targetPos = worldPosition.relative(d);
-        var be = level.getBlockEntity(targetPos);
 
-        if (be != null) {
-            var cap = be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER, d.getOpposite());
-            if (cap.isPresent()) {
-                var inv = cap.orElse(null);
-                if (inv != null) {
-                    for (var st : inputs) {
-                        if (st.isEmpty()) continue;
-                        var rem = ItemHandlerHelper.insertItem(inv, st.copy(), false);
-                        if (!rem.isEmpty()) {
-                            Containers.dropItemStack(level,
-                                    targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5, rem);
-                        }
-                    }
-                    return;
-                }
-            }
-        }
-        // иначе — в мир
+        // сначала к соседям, затем — в буфер вывода, без дропов
         for (var st : inputs) {
-            if (!st.isEmpty()) {
-                Containers.dropItemStack(level,
-                        targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5, st.copy());
+            if (st == null || st.isEmpty()) continue;
+            ItemStack rest = tryPushToNeighbor(st.copy(), null);
+            if (!rest.isEmpty()) {
+                addToOutputBuffer(rest);
             }
         }
     }
 
     /* ======================= Save / Load ======================= */
 
-    @Override
-    protected void saveAdditional(CompoundTag tag) {
+    @Override protected void saveAdditional(CompoundTag tag) {
         tag.put("GridInv", gridInv.serializeNBT());
         tag.put("Pattern", patternInv.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
+        tag.put("Output",  outputInv.serializeNBT());
         super.saveAdditional(tag);
     }
 
-    @Override
-    public void load(CompoundTag tag) {
+    @Override public void load(CompoundTag tag) {
         super.load(tag);
         if (tag.contains("GridInv")) gridInv.deserializeNBT(tag.getCompound("GridInv"));
         if (tag.contains("Pattern")) patternInv.deserializeNBT(tag.getCompound("Pattern"));
         if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
+        if (tag.contains("Output"))  outputInv.deserializeNBT(tag.getCompound("Output"));
     }
 
-    /* ======================= Exposed getters for menu ======================= */
+    /* ======================= Exposed getters ======================= */
 
     public ItemStackHandler getGridInv() { return gridInv; }
     public ItemStackHandler getPatternInv() { return patternInv; }
     public ItemStackHandler getUpgradesInv() { return upgrades; }
 
-    // для GUI: 0..100
     public int getCraftingProgress() {
         if (currentTotalTicks <= 0) return 0;
         int done = currentTotalTicks - Math.max(0, currentTicksLeft);
@@ -474,7 +521,7 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
         return pct;
     }
 
-    /* ======================= AE2 Capabilities ======================= */
+    /* ======================= Capabilities ======================= */
 
     private final LazyOptional<ICraftingMachine> craftingMachineCap = LazyOptional.of(() -> this);
     private final LazyOptional<IInWorldGridNodeHost> hostCap = LazyOptional.of(() -> this);
@@ -496,14 +543,39 @@ public class ExtremeMolecularAssemblerBlockEntity extends BlockEntity
         var n = node.getNode();
         if (n != null && n.getGrid() != null) return;
 
-        var t = queue.peek();
-        if (t == null) return;
-
-        if (--t.ticks <= 0) {
-            ejectOutputs(t.outputs, t.eject);
-            for (int i = 0; i < gridInv.getSlots(); i++) gridInv.setStackInSlot(i, ItemStack.EMPTY);
-            queue.poll();
-            setChanged();
+        if (queue.peek() == null) {
+            tryStartManualJob();
+            if (queue.peek() == null) {
+                currentTotalTicks = 0;
+                currentTicksLeft  = 0;
+                return;
+            }
+            currentTotalTicks = Math.max(1, queue.peek().ticks);
+            currentTicksLeft  = queue.peek().ticks;
         }
+
+        Task t = queue.peek();
+        int work = (int) Math.ceil(getSpeedMultiplier());
+        t.ticks -= work;
+        if (t.ticks < 0) t.ticks = 0;
+        currentTicksLeft = t.ticks;
+
+        if (t.ticks > 0) return;
+
+        pushOutputsOrBuffer(t.outputs, t.eject);
+
+        for (int i = 0; i < gridInv.getSlots(); i++) gridInv.setStackInSlot(i, ItemStack.EMPTY);
+
+        queue.poll();
+        if (!queue.isEmpty()) {
+            Task nxt = queue.peek();
+            currentTotalTicks = Math.max(1, nxt.ticks);
+            currentTicksLeft  = nxt.ticks;
+        } else {
+            currentTotalTicks = 0;
+            currentTicksLeft  = 0;
+        }
+
+        setChanged();
     }
 }

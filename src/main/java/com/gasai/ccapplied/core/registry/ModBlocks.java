@@ -3,6 +3,7 @@ package com.gasai.ccapplied.core.registry;
 import com.gasai.ccapplied.CCApplied;
 import com.gasai.ccapplied.common.block.ExtremeMolecularAssemblerBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.block.SoundType;
@@ -19,16 +20,11 @@ public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, CCApplied.MODID);
 
-    public static final RegistryObject<Block> EXTREME_ASSEMBLER = BLOCKS.register(
-            "extreme_molecular_assembler",
-            () -> new ExtremeMolecularAssemblerBlock(BlockBehaviour.Properties
-                    .of()
-                    .mapColor(MapColor.METAL)
-                    .strength(5.0F, 10.0F)
-                    .sound(SoundType.METAL)
-                    .noOcclusion()
-                    .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
-                    .pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<Block> EXTREME_ASSEMBLER =
+            BLOCKS.register("extreme_molecular_assembler",
+                    () -> new ExtremeMolecularAssemblerBlock(
+                            BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()
+                    ));
 
 
     public static void register(IEventBus bus) {
