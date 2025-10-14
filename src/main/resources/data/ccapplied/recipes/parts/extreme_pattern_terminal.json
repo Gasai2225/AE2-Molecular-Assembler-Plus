@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "PEP",
+    "IPI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "ae2:blank_pattern"
+    },
+    "E": {
+      "item": "ae2:pattern_encoding_terminal"
+    }
+  },
+  "result": {
+    "item": "ccapplied:extreme_pattern_terminal"
+  }
+}
+

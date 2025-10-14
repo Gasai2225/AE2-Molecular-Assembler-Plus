@@ -3,9 +3,7 @@
   "minVersion": "0.8",
   "package": "com.gasai.ccapplied.mixin",
   "compatibilityLevel": "JAVA_17",
-  "client": [
-    "GuiGraphicsMixin"
-  ],
+  "client": [],
   "injectors": { "defaultRequire": 1 },
   "refmap": "ccapplied.refmap.json"
 }

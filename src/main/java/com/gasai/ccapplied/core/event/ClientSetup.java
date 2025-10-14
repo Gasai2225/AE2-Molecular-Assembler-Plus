@@ -1,24 +1,27 @@
 package com.gasai.ccapplied.core.event;
 
-import com.gasai.ccapplied.client.gui.ExtremeMolecularAssemblerScreen;
-import com.gasai.ccapplied.core.registry.ModBlocks;
+import com.gasai.ccapplied.CCApplied;
+import com.gasai.ccapplied.client.gui.ExtremePatternTerminalScreen;
 import com.gasai.ccapplied.core.registry.ModMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
-public final class ClientSetup {
-    private ClientSetup() {}
+/**
+ * Обработчик событий клиентской стороны
+ */
+@Mod.EventBusSubscriber(modid = CCApplied.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+public class ClientSetup {
+
     @SubscribeEvent
-    public static void onClientSetup(final FMLClientSetupEvent event) {
+    public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            ItemBlockRenderTypes.setRenderLayer(ModBlocks.EXTREME_ASSEMBLER.get(), RenderType.cutout());
-            MenuScreens.register(ModMenus.EXTREME_ASSEMBLER.get(), ExtremeMolecularAssemblerScreen::new);
+            // Регистрация экранов
+            MenuScreens.register(com.gasai.ccapplied.common.menu.ExtremePatternTerminalMenu.TYPE, 
+                                ExtremePatternTerminalScreen::new);
         });
     }
 }
+

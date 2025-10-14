@@ -1,7 +1,12 @@
 {
-  "item.ccapplied.extreme_pattern": "Extreme Pattern",
-  "item.ccapplied.encoded_extreme_pattern": "Encoded Extreme Pattern",
-  "tooltip.ccapplied.pattern.crafts": "Craft",
-  "tooltip.ccapplied.hold_shift": "Hold Shift for preview",
-  "block.ccapplied.extreme_molecular_assembler": "Extreme Molecular Assembler"
+  "block.ccapplied.extreme_pattern_terminal": "Extreme Pattern Terminal",
+  "item.ccapplied.extreme_pattern_terminal": "Extreme Pattern Terminal",
+  
+  "gui.ccapplied.extreme_pattern_terminal": "Extreme Pattern Terminal",
+  "gui.ccapplied.extreme_crafting": "Extreme Crafting",
+  "gui.ccapplied.processing": "Processing",
+  "gui.ccapplied.encode": "Encode Pattern",
+  "gui.ccapplied.clear": "Clear Grid",
+  "gui.ccapplied.substitutions": "Substitutions"
 }
+

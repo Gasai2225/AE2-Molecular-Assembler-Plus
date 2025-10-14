@@ -1,0 +1,9 @@
+{
+  "parent": "ae2:part/terminal",
+  "textures": {
+    "sides": "ae2:part/terminal_sides",
+    "front": "ccapplied:part/extreme_pattern_terminal",
+    "back": "ae2:part/monitor_back"
+  }
+}
+
