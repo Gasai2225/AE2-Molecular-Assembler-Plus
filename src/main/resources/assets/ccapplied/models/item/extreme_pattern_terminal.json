@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "ae2:item/part/pattern_encoding_terminal_off"
+  }
+}
+

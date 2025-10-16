@@ -1,4 +1,8 @@
 package com.gasai.ccapplied.integration.ae2.api;
 
-public class IExtremePatternTerminalLogicHost {
+import net.minecraft.world.level.Level;
+
+public interface IExtremePatternTerminalLogicHost {
+    Level getLevel();
+    void markForSave();
 }

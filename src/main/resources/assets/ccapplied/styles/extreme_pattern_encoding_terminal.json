@@ -1,0 +1,18 @@
+{
+  "width": 256,
+  "height": 240,
+  "widgets": [
+    {
+      "type": "me_inventory",
+      "x": 7,
+      "y": 17,
+      "width": 162,
+      "height": 108
+    },
+    {
+      "type": "player_inventory",
+      "x": 7,
+      "y": 137
+    }
+  ]
+}

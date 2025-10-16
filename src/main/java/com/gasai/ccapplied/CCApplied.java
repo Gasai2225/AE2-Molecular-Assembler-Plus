@@ -1,45 +1,27 @@
-package com.gasai.ccapplied.core.registry;
+package com.gasai.ccapplied;
 
-import com.gasai.ccapplied.integration.ae2.pattern.extreme.ExtremePatternItems;
-import net.minecraftforge.api.distmarker.Dist;
+import appeng.api.crafting.PatternDetailsHelper;
+import com.gasai.ccapplied.core.registry.CCItems;
+import com.gasai.ccapplied.core.registry.CCMenuTypes;
+import com.gasai.ccapplied.integration.ae2.pattern.ExtremePatternDecoder;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
-
+import org.slf4j.Logger;
 
 @Mod(CCApplied.MODID)
 public final class CCApplied {
-
     public static final String MODID = "ccapplied";
     public static final Logger LOG = LogUtils.getLogger();
 
     public CCApplied() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        CCMenus.MENUS.register(modBus);
         CCItems.ITEMS.register(modBus);
-        ExtremePatternItems.ITEMS.register(modBus);
-        // CCItems/CCBlocks и т.д. — тоже тут, если ещё не подключены
-    }
+        CCMenuTypes.MENUS.register(modBus);
 
-
-    @Mod.EventBusSubscriber(modid = CCApplied.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static final class CCClient {
-        @SubscribeEvent
-        public static void clientSetup(FMLClientSetupEvent e) {
-        }
-    }
-
-    private static void commonSetup(FMLCommonSetupEvent e) {
-        e.enqueueWork(() -> {
-            appeng.api.crafting.PatternDetailsHelper.registerDecoder(
-                    com.gasai.ccapplied.integration.ae2.pattern.extreme.ExtremePatternDecoder.INSTANCE
-            );
-        });
+        // ВАЖНО: регистрируем единожды
+        PatternDetailsHelper.registerDecoder(ExtremePatternDecoder.INSTANCE);
     }
 }

@@ -24,13 +24,6 @@ java {
     }
 }
 
-mixin {
-    add sourceSets.main, "ccapplied.refmap.json"
-    config "ccapplied.mixins.json"
-
-    debug.verbose = true
-    debug.export  = true
-}
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
@@ -54,7 +47,6 @@ minecraft {
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
             property 'mixin.debug', 'true'
-            args "-mixin.config=ccapplied.mixins.json"
         }
 
         server {
@@ -108,8 +100,6 @@ dependencies {
     // Extended Crafting
     implementation fg.deobf("curse.maven:extended-crafting-268387:6880322")
     implementation fg.deobf("curse.maven:cucumber-272335:6880321")
-
-    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -162,18 +152,7 @@ publishing {
         }
     }
 }
-jar {
-    manifest {
-        attributes(
-                "MixinConfigs": "ccapplied.mixins.json"
-        )
-    }
-}
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-
-    // (Не обязательно, но полезно) Явно сказать процессору куда класть refmap
-    options.compilerArgs += [
-    ]
 }

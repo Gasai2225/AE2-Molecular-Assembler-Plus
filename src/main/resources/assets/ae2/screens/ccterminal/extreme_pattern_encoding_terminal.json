@@ -1,0 +1,90 @@
+{
+  "includes": [
+    "../terminals/terminal.json"
+  ],
+  "slots": {
+    "CRAFTING_GRID": {
+      "left": 8,
+      "top": 87,
+      "grid": "BREAK_AFTER_9COLS"
+    },
+    "CRAFTING_RESULT": {
+      "left": 173,
+      "top": 105
+    },
+    "BLANK_PATTERN": {
+      "left": 173,
+      "top": 141
+    },
+    "ENCODED_PATTERN": {
+      "left": 173,
+      "top": 177
+    }
+  },
+  "text": {
+    "dialog_title": {
+      "text": {
+        "translate": "gui.ae2.Terminal"
+      },
+      "position": {
+        "left": 8,
+        "top": 6
+      }
+    },
+    "crafting_grid_title": {
+      "text": {
+        "translate": "gui.ccapplied.ExtremePatternEncoding"
+      },
+      "position": {
+        "left": 8,
+        "top": 75
+      }
+    }
+  },
+  "terminalStyle": {
+    "header": {
+      "texture": "guis/extreme_pattern_encoder.png",
+      "textureWidth": 512,
+      "textureHeight": 512,
+      "srcRect": [0, 0, 195, 17]
+    },
+    "firstRow": {
+      "texture": "guis/extreme_pattern_encoder.png",
+      "textureWidth": 512,
+      "textureHeight": 512,
+      "srcRect": [0, 17, 195, 18]
+    },
+    "row": {
+      "texture": "guis/extreme_pattern_encoder.png",
+      "textureWidth": 512,
+      "textureHeight": 512,
+      "srcRect": [0, 35, 195, 18]
+    },
+    "lastRow": {
+      "texture": "guis/extreme_pattern_encoder.png",
+      "textureWidth": 512,
+      "textureHeight": 512,
+      "srcRect": [0, 53, 195, 18]
+    },
+    "bottom": {
+      "texture": "guis/extreme_pattern_encoder.png",
+      "textureWidth": 512,
+      "textureHeight": 512,
+      "srcRect": [0, 71, 195, 278]
+    }
+  },
+  "widgets": {
+    "extremeEncodePattern": {
+      "left": 227,
+      "bottom": 155,
+      "width": 20,
+      "height": 20
+    },
+    "extremeClearPattern": {
+      "left": 167,
+      "bottom": 155,
+      "width": 20,
+      "height": 20
+    }
+  }
+}
