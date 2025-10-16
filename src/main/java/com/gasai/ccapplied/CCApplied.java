@@ -10,11 +10,19 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
+import net.minecraft.resources.ResourceLocation;
 
 @Mod(CCApplied.MODID)
 public final class CCApplied {
     public static final String MODID = "ccapplied";
     public static final Logger LOG = LogUtils.getLogger();
+    
+    /**
+     * Создает ResourceLocation для данного пути
+     */
+    public static ResourceLocation makeId(String path) {
+        return new ResourceLocation(MODID, path);
+    }
 
     public CCApplied() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
