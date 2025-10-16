@@ -1,32 +1,45 @@
-package com.gasai.ccapplied;
+package com.gasai.ccapplied.core.registry;
 
-import com.gasai.ccapplied.core.registry.ModBlockEntities;
-import com.gasai.ccapplied.core.registry.ModBlocks;
-import com.gasai.ccapplied.core.registry.ModItems;
-import com.gasai.ccapplied.core.registry.ModMenus;
-import com.gasai.ccapplied.core.registry.ModParts;
+import com.gasai.ccapplied.integration.ae2.pattern.extreme.ExtremePatternItems;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.mojang.logging.LogUtils;
+
 
 @Mod(CCApplied.MODID)
 public final class CCApplied {
 
     public static final String MODID = "ccapplied";
-    public static final Logger LOGGER = LoggerFactory.getLogger(CCApplied.class);
+    public static final Logger LOG = LogUtils.getLogger();
 
     public CCApplied() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        CCMenus.MENUS.register(modBus);
+        CCItems.ITEMS.register(modBus);
+        ExtremePatternItems.ITEMS.register(modBus);
+        // CCItems/CCBlocks и т.д. — тоже тут, если ещё не подключены
+    }
 
-        // Регистрация компонентов мода
-        ModBlocks.register(modEventBus);
-        ModItems.register(modEventBus);
-        ModBlockEntities.register(modEventBus);
-        ModMenus.register(modEventBus);
-        ModParts.register(modEventBus); // Регистрация Part'ов
 
-        LOGGER.info("CCApplied initialized!");
+    @Mod.EventBusSubscriber(modid = CCApplied.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static final class CCClient {
+        @SubscribeEvent
+        public static void clientSetup(FMLClientSetupEvent e) {
+        }
+    }
+
+    private static void commonSetup(FMLCommonSetupEvent e) {
+        e.enqueueWork(() -> {
+            appeng.api.crafting.PatternDetailsHelper.registerDecoder(
+                    com.gasai.ccapplied.integration.ae2.pattern.extreme.ExtremePatternDecoder.INSTANCE
+            );
+        });
     }
 }

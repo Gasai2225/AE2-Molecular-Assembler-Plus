@@ -1,8 +1,0 @@
-{
-  "parent": "ae2:item/part",
-  "textures": {
-    "sides": "ae2:part/terminal_sides",
-    "front": "ccapplied:part/extreme_pattern_terminal_off",
-    "back": "ae2:part/monitor_back"
-  }
-}
