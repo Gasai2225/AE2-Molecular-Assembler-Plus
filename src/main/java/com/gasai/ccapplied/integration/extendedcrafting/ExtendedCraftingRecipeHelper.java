@@ -50,8 +50,6 @@ public class ExtendedCraftingRecipeHelper {
             
             // Ищем ExtendedCrafting рецепты через специальные категории
             try {
-                com.gasai.ccapplied.CCApplied.LOG.debug("[ExtendedCraftingHelper] Looking for ExtendedCrafting recipes in {}x{} grid", 9, 9);
-                
                 // Получаем все рецепты из менеджера
                 var allRecipes = recipeManager.getRecipes();
                 
@@ -59,19 +57,13 @@ public class ExtendedCraftingRecipeHelper {
                 for (var recipe : allRecipes) {
                     // Проверяем, является ли рецепт ITableRecipe
                     if (recipe instanceof ITableRecipe tableRecipe) {
-                        com.gasai.ccapplied.CCApplied.LOG.debug("[ExtendedCraftingHelper] Found ITableRecipe: {} (tier: {})", 
-                            recipe.getId(), tableRecipe.getTier());
-                        
                         // Проверяем, подходит ли этот рецепт для нашей сетки
                         if (matchesExtendedCraftingRecipe(tableRecipe, craftingGrid, level)) {
-                            com.gasai.ccapplied.CCApplied.LOG.debug("[ExtendedCraftingHelper] Found matching recipe: {}", 
-                                getRecipeInfo(tableRecipe));
                             return tableRecipe;
                         }
                     }
                 }
                 
-                com.gasai.ccapplied.CCApplied.LOG.debug("[ExtendedCraftingHelper] No matching ExtendedCrafting recipe found");
                 return null;
                 
             } catch (Exception e) {
@@ -118,7 +110,7 @@ public class ExtendedCraftingRecipeHelper {
             // Получаем ингредиенты рецепта
             var ingredients = recipe.getIngredients();
             
-            // Проверяем соответствие ингредиентов
+            // Проверяем соответствие ингредиентов в области рецепта
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     int recipeIndex = x + y * width;
@@ -133,32 +125,28 @@ public class ExtendedCraftingRecipeHelper {
                             if (gridStack.isEmpty() || !ingredient.test(gridStack)) {
                                 return false; // Не соответствует
                             }
+                        } else {
+                            // Если ингредиент пустой, в сетке тоже должно быть пусто
+                            if (!gridStack.isEmpty()) {
+                                return false;
+                            }
                         }
                     }
                 }
             }
             
-            // Дополнительная проверка: если в рецепте есть ингредиенты, но в сетке их нет
-            boolean hasIngredients = false;
-            boolean hasGridItems = false;
-            
-            for (var ingredient : ingredients) {
-                if (!ingredient.isEmpty()) {
-                    hasIngredients = true;
-                    break;
+            // ВАЖНО: Проверяем, что ВНЕ области рецепта нет лишних предметов
+            for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
+                    int gridIndex = x + y * 9;
+                    
+                    // Если позиция ВНЕ области рецепта
+                    if (x >= width || y >= height) {
+                        if (!craftingGrid[gridIndex].isEmpty()) {
+                            return false; // Есть лишний предмет
+                        }
+                    }
                 }
-            }
-            
-            for (ItemStack stack : craftingGrid) {
-                if (!stack.isEmpty()) {
-                    hasGridItems = true;
-                    break;
-                }
-            }
-            
-            // Если в рецепте есть ингредиенты, но в сетке ничего нет - не подходит
-            if (hasIngredients && !hasGridItems) {
-                return false;
             }
             
             return true;
@@ -208,7 +196,12 @@ public class ExtendedCraftingRecipeHelper {
                 }
             }
             
-            // Все ингредиенты найдены
+            // ВАЖНО: Проверяем, что не осталось лишних предметов
+            // Если все ингредиенты найдены, но остались предметы - рецепт не подходит
+            if (!availableItems.isEmpty()) {
+                return false; // Есть лишние предметы
+            }
+            
             return true;
             
         } catch (Exception e) {

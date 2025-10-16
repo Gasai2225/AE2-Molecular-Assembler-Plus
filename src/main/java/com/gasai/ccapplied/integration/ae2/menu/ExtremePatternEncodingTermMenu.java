@@ -106,10 +106,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         
         // Логируем создание слота
         CCApplied.LOG.info("[ExtremeMenu] ExtremeCraftingTermSlot created and added to menu");
-        
-        // ТЕСТ: Принудительно обновляем слот результата для проверки
-        CCApplied.LOG.info("[ExtremeMenu] Testing output slot - getItem(): {}", 
-            this.outputSlot.getItem().isEmpty() ? "empty" : this.outputSlot.getItem().getDisplayName().getString());
 
         // реальные слоты бланка/энкодед
         this.blankPatternSlot = this.addSlot(
@@ -132,10 +128,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         this.networkConnected = false;
         this.patternInputCount = 0;
         this.patternOutputCount = 0;
-        
-        // ТЕСТ: Принудительно обновляем меню для проверки работы слота
-        CCApplied.LOG.info("[ExtremeMenu] Forcing broadcastChanges() to test slot");
-        this.broadcastChanges();
     }
 
     /* -------------------- методы обновления -------------------- */
@@ -225,10 +217,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     @Override
     public void broadcastChanges() {
         super.broadcastChanges();
-        
-        // Логируем вызов broadcastChanges
-        CCApplied.LOG.debug("[ExtremeMenu] broadcastChanges called, outputSlot item: {}", 
-            this.outputSlot.getItem().isEmpty() ? "empty" : this.outputSlot.getItem().getDisplayName().getString());
         
         // Синхронизируем GUI поля с клиентом
         // broadcastFullUpdate() не существует, используем стандартный механизм
@@ -385,15 +373,10 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
 
     @Override
     public void onSlotChange(Slot slot) {
-        // Логируем изменение слота
-        CCApplied.LOG.debug("[ExtremeMenu] onSlotChange called for slot: {}", slot.getClass().getSimpleName());
-        
-        // Если изменился слот в сетке крафта, принудительно обновляем результат
+        // Если изменился слот в сетке крафта, обновляем результат
         if (slot instanceof FakeSlot && isInputSlot(slot)) {
-            CCApplied.LOG.debug("[ExtremeMenu] Input slot changed, forcing output update");
-            // Принудительно обновляем слот результата
-            this.outputSlot.setChanged();
-            broadcastChanges();
+            // НЕ вызываем setChanged() здесь - это вызывает избыточные обновления
+            // Слот результата будет обновлен автоматически при следующем getItem()
         }
     }
     
@@ -450,4 +433,3 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     }
 
 }
-

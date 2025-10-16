@@ -19,6 +19,7 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
     private final Player player;
     private final InternalInventory craftingMatrix;
     
+    
     public ExtremeCraftingTermSlot(Player player, IActionSource actionSource, IEnergySource energySource,
                                   MEStorage storage, InternalInventory craftingMatrix, 
                                   IMenuCraftingPacket menu, InternalInventory inventory, int slot) {
@@ -41,14 +42,16 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
     
     @Override
     public ItemStack getItem() {
-        // Вычисляем результат крафта в реальном времени
+        // Вычисляем результат крафта каждый раз (без кэширования)
         ItemStack result = getCraftingResult();
         
-        // ВАЖНО: Сохраняем результат в базовом слоте для синхронизации с клиентом
-        super.set(result);
+        // Гарантируем, что результат не null
+        ItemStack finalResult = result != null ? result : ItemStack.EMPTY;
         
-        // Гарантируем, что никогда не возвращаем null
-        return result != null ? result : ItemStack.EMPTY;
+        // ВАЖНО: Сохраняем результат в базовом слоте для синхронизации с клиентом
+        super.set(finalResult);
+        
+        return finalResult;
     }
     
     @Override
@@ -74,8 +77,6 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
         try {
             // Проверяем, что игрок и мир доступны
             if (player == null || player.level() == null || craftingMatrix == null) {
-                CCApplied.LOG.debug("[ExtremeCraftingSlot] getCraftingResult: null check failed - player={}, level={}, matrix={}", 
-                    player != null, player != null && player.level() != null, craftingMatrix != null);
                 return ItemStack.EMPTY;
             }
             
@@ -92,18 +93,12 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
                 }
             }
             
-            CCApplied.LOG.debug("[ExtremeCraftingSlot] getCraftingResult: matrix has {} non-empty slots out of {}", 
-                nonEmptySlots, craftingMatrix.size());
-            
             // Получаем превью рецепта из ExtendedCrafting
             ItemStack result = com.gasai.ccapplied.integration.extendedcrafting.ExtendedCraftingRecipeHelper.getRecipePreview(
                 craftingGrid, player.level());
             
             // Гарантируем, что результат не null
             ItemStack finalResult = result != null ? result : ItemStack.EMPTY;
-            CCApplied.LOG.debug("[ExtremeCraftingSlot] getCraftingResult: ExtendedCrafting returned {}, final result: {}", 
-                result != null ? result.getDisplayName().getString() : "null",
-                finalResult.isEmpty() ? "empty" : finalResult.getDisplayName().getString());
             return finalResult;
                 
         } catch (Exception e) {
@@ -142,11 +137,5 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
         // Игнорируем инициализацию от сервера, результат вычисляется на клиенте
     }
     
-    /**
-     * Помечает слот как измененный (для принудительного обновления).
-     */
-    public void setChanged() {
-        // Принудительно обновляем слот
-        CCApplied.LOG.debug("[ExtremeCraftingSlot] setChanged called, forcing update");
-    }
+    
 }
