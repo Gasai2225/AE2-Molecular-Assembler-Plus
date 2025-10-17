@@ -109,8 +109,9 @@ public class ExtremePatternEncodingLogic implements InternalInventoryHost {
 
 
     private void loadExtremeCraftingPattern(ExtremeCraftingPattern pattern) {
-        // входы 9×9 как и раньше
-        fillInventoryFromSparseStacks(encodedInputInv, pattern.getSparseInputs());
+        // входы 9×9: используем плотное представление 81 слота, чтобы сохранить позиции
+        var dense = pattern.getDenseInputs81();
+        fillInventoryFromSparseStacks(encodedInputInv, dense);
 
         // выход: у нас MAX_OUTPUT_SLOTS = 1, берём первичный output
         var outs = pattern.getOutputs();
@@ -205,7 +206,7 @@ public class ExtremePatternEncodingLogic implements InternalInventoryHost {
      *  - только предметные ключи (никаких жидкостей/нестандартных ключей)
      *  - количество в ячейке = 1
      */
-    private void fixExtremeCraftingGrid() {
+    public void fixExtremeCraftingGrid() {
         if (host.getLevel() == null || host.getLevel().isClientSide()) {
             return;
         }
@@ -242,5 +243,137 @@ public class ExtremePatternEncodingLogic implements InternalInventoryHost {
             // Если хотите всегда 1 — раскомментируйте:
             // if (s.amount() != 1) out.setStack(slot, new GenericStack(s.what(), 1));
         }
+    }
+
+    /* ===================== Кодирование ===================== */
+
+    /**
+     * Кодирует паттерн из текущего состояния encodedInputInv и encodedOutputInv
+     */
+    public boolean encodePattern() {
+        if (isClientSide()) {
+            return false;
+        }
+
+        // Проверяем что есть входные данные
+        boolean hasInputs = false;
+        for (int i = 0; i < encodedInputInv.size(); i++) {
+            if (encodedInputInv.getStack(i) != null) {
+                hasInputs = true;
+                break;
+            }
+        }
+
+        if (!hasInputs) {
+            return false;
+        }
+
+        // Проверяем что есть выходные данные
+        var output = encodedOutputInv.getStack(0);
+        if (output == null) {
+            return false;
+        }
+
+        // Создаем закодированный паттерн
+        var resultPattern = new ItemStack(CCItems.EXTREME_CRAFTING_PATTERN.get());
+        var encodedPatternItem = (ExtremeEncodedPatternItem) resultPattern.getItem();
+
+        // Создаем массив GenericStack[] длиной 81 для входных данных
+        GenericStack[] inputStacks = new GenericStack[MAX_INPUT_SLOTS];
+        for (int i = 0; i < MAX_INPUT_SLOTS; i++) {
+            inputStacks[i] = encodedInputInv.getStack(i);
+        }
+
+        // Кодируем паттерн
+        resultPattern = encodedPatternItem.encode(inputStacks, output, recipeId);
+
+        // Проверяем, есть ли уже закодированный паттерн в слоте
+        var existingPattern = encodedPatternInv.getStackInSlot(0);
+        if (!existingPattern.isEmpty()) {
+            // Если есть закодированный паттерн, полностью очищаем слот и ставим новый
+            encodedPatternInv.extractItem(0, existingPattern.getCount(), false);
+            encodedPatternInv.insertItem(0, resultPattern, false);
+        } else {
+            // Если нет закодированного паттерна, проверяем бланк паттерн
+            var blankPattern = blankPatternInv.getStackInSlot(0);
+            if (!isExtremeBlank(blankPattern)) {
+                return false;
+            }
+            
+            // Убираем бланк паттерн (уменьшаем количество на 1)
+            blankPatternInv.extractItem(0, 1, false);
+            
+            // Ставим закодированный паттерн
+            encodedPatternInv.insertItem(0, resultPattern, false);
+        }
+
+        return true;
+    }
+
+    /**
+     * Очищает сетку крафта
+     */
+    public void clearCraftingGrid() {
+        encodedInputInv.clear();
+        encodedOutputInv.clear();
+    }
+
+    /**
+     * Заполняет encodedInputInv и encodedOutputInv из реальной сетки крафта
+     */
+    public void fillFromCraftingMatrix(InternalInventory craftingMatrix, ItemStack recipeResult) {
+        // Очищаем текущие данные
+        encodedInputInv.clear();
+        encodedOutputInv.clear();
+
+        // Заполняем входные данные из craftingMatrix
+        for (int i = 0; i < Math.min(craftingMatrix.size(), MAX_INPUT_SLOTS); i++) {
+            ItemStack stack = craftingMatrix.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                var itemKey = AEItemKey.of(stack);
+                if (itemKey != null) {
+                    encodedInputInv.setStack(i, new GenericStack(itemKey, stack.getCount()));
+                }
+            }
+        }
+
+        // Заполняем выходные данные
+        if (!recipeResult.isEmpty()) {
+            var outputItemKey = AEItemKey.of(recipeResult);
+            if (outputItemKey != null) {
+                encodedOutputInv.setStack(0, new GenericStack(outputItemKey, recipeResult.getCount()));
+            }
+        }
+    }
+
+    /**
+     * Загружает рецепт из закодированного паттерна в реальную сетку крафта
+     */
+    public void loadPatternIntoMatrix(InternalInventory craftingMatrix, ItemStack patternStack) {
+        if (patternStack.isEmpty()) {
+            return;
+        }
+
+        // Декодируем паттерн
+        var details = PatternDetailsHelper.decodePattern(patternStack, host.getLevel());
+        if (!(details instanceof ExtremeCraftingPattern extreme)) {
+            return;
+        }
+
+        // Очищаем сетку крафта
+        for (int i = 0; i < craftingMatrix.size(); i++) {
+            craftingMatrix.insertItem(i, ItemStack.EMPTY, false);
+        }
+
+        // Загружаем данные из паттерна в сетку крафта
+        var inputStacks = extreme.getInputStacks();
+        for (int i = 0; i < Math.min(craftingMatrix.size(), inputStacks.length); i++) {
+            if (inputStacks[i] != null && !inputStacks[i].isEmpty()) {
+                craftingMatrix.insertItem(i, inputStacks[i].copy(), false);
+            }
+        }
+
+        // Также обновляем виртуальные инвентари для синхронизации
+        loadExtremeCraftingPattern(extreme);
     }
 }

@@ -110,11 +110,36 @@ public class ExtendedCraftingRecipeHelper {
             // Получаем ингредиенты рецепта
             var ingredients = recipe.getIngredients();
             
+            // Ищем рецепт во всех возможных позициях в сетке 9x9
+            for (int startY = 0; startY <= 9 - height; startY++) {
+                for (int startX = 0; startX <= 9 - width; startX++) {
+                    if (matchesRecipeAtPosition(recipe, ingredients, craftingGrid, startX, startY, width, height)) {
+                        return true; // Найден рецепт в этой позиции
+                    }
+                }
+            }
+            
+            return false; // Рецепт не найден ни в одной позиции
+            
+        } catch (Exception e) {
+            com.gasai.ccapplied.CCApplied.LOG.warn("Error matching ShapedTableRecipe", e);
+            return false;
+        }
+    }
+    
+    /**
+     * Проверяет, соответствует ли рецепт сетке в конкретной позиции
+     */
+    private static boolean matchesRecipeAtPosition(ShapedTableRecipe recipe, 
+                                                  java.util.List<net.minecraft.world.item.crafting.Ingredient> ingredients,
+                                                  ItemStack[] craftingGrid, 
+                                                  int startX, int startY, int width, int height) {
+        try {
             // Проверяем соответствие ингредиентов в области рецепта
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     int recipeIndex = x + y * width;
-                    int gridIndex = x + y * 9; // 9x9 сетка
+                    int gridIndex = (startX + x) + (startY + y) * 9; // 9x9 сетка
                     
                     if (recipeIndex < ingredients.size() && gridIndex < craftingGrid.length) {
                         var ingredient = ingredients.get(recipeIndex);
@@ -135,13 +160,14 @@ public class ExtendedCraftingRecipeHelper {
                 }
             }
             
-            // ВАЖНО: Проверяем, что ВНЕ области рецепта нет лишних предметов
+            // Проверяем, что ВНЕ области рецепта нет лишних предметов
+            // Но только для позиций, которые не заняты рецептом
             for (int y = 0; y < 9; y++) {
                 for (int x = 0; x < 9; x++) {
                     int gridIndex = x + y * 9;
                     
-                    // Если позиция ВНЕ области рецепта
-                    if (x >= width || y >= height) {
+                    // Если позиция ВНЕ области рецепта (учитываем startX и startY)
+                    if (x < startX || x >= startX + width || y < startY || y >= startY + height) {
                         if (!craftingGrid[gridIndex].isEmpty()) {
                             return false; // Есть лишний предмет
                         }
@@ -152,7 +178,7 @@ public class ExtendedCraftingRecipeHelper {
             return true;
             
         } catch (Exception e) {
-            com.gasai.ccapplied.CCApplied.LOG.warn("Error matching ShapedTableRecipe", e);
+            com.gasai.ccapplied.CCApplied.LOG.warn("Error matching recipe at position", e);
             return false;
         }
     }

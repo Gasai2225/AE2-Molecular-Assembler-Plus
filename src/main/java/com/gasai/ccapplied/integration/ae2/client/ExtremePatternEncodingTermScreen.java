@@ -1,6 +1,7 @@
 package com.gasai.ccapplied.integration.ae2.client;
 
 import com.gasai.ccapplied.integration.ae2.menu.ExtremePatternEncodingTermMenu;
+import com.gasai.ccapplied.integration.ae2.widgets.ExtremePatternTerminalWidgets;
 import appeng.client.gui.me.common.MEStorageScreen;
 import appeng.client.gui.style.ScreenStyle;
 import net.minecraft.network.chat.Component;
@@ -32,7 +33,15 @@ public class ExtremePatternEncodingTermScreen extends MEStorageScreen<ExtremePat
         // Инициализируем виджеты для экстремального терминала
         com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeScreen] Initializing extreme pattern terminal widgets");
         
-        // Виджеты определяются в JSON файле и автоматически создаются AE2
+        // Создаем кастомную кнопку кодирования паттерна
+        var encodeBtn = new ExtremeEncodeButton(menu);
+        encodeBtn.setHalfSize(true);
+        widgets.add("extremeEncodePattern", encodeBtn);
+        
+        // Создаем кастомную кнопку очистки паттерна
+        var clearBtn = new ExtremeClearButton(menu);
+        clearBtn.setHalfSize(true);
+        widgets.add("extremeClearPattern", clearBtn);
         
         com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeScreen] Extreme pattern terminal widgets initialized");
     }
@@ -49,6 +58,52 @@ public class ExtremePatternEncodingTermScreen extends MEStorageScreen<ExtremePat
     // Метод рендеринга сетки будет использоваться в будущем для кастомного отображения
 
     // Убираем переопределение render, так как это может конфликтовать с AEBaseScreen
+    
+    /**
+     * Кастомная кнопка кодирования экстремального паттерна
+     */
+    private static class ExtremeEncodeButton extends appeng.client.gui.widgets.IconButton {
+        private final ExtremePatternEncodingTermMenu menu;
+
+        public ExtremeEncodeButton(ExtremePatternEncodingTermMenu menu) {
+            super(btn -> {
+                com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeScreen] Encode button clicked");
+                if (menu.canEncode()) {
+                    menu.encode();
+                } else {
+                    com.gasai.ccapplied.CCApplied.LOG.warn("[ExtremeScreen] Cannot encode - conditions not met");
+                }
+            });
+            this.menu = menu;
+            this.setMessage(Component.translatable("gui.ccapplied.extreme_encode_pattern"));
+        }
+
+        @Override
+        protected appeng.client.gui.Icon getIcon() {
+            return appeng.client.gui.Icon.WHITE_ARROW_DOWN; // Используем иконку кодирования из AE2
+        }
+    }
+    
+    /**
+     * Кастомная кнопка очистки экстремального паттерна
+     */
+    private static class ExtremeClearButton extends appeng.client.gui.widgets.IconButton {
+        private final ExtremePatternEncodingTermMenu menu;
+
+        public ExtremeClearButton(ExtremePatternEncodingTermMenu menu) {
+            super(btn -> {
+                com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeScreen] Clear button clicked");
+                menu.clearAll();
+            });
+            this.menu = menu;
+            this.setMessage(Component.translatable("gui.ccapplied.extreme_clear_pattern"));
+        }
+
+        @Override
+        protected appeng.client.gui.Icon getIcon() {
+            return appeng.client.gui.Icon.CLEAR; // Используем иконку очистки из AE2
+        }
+    }
 }
 
 

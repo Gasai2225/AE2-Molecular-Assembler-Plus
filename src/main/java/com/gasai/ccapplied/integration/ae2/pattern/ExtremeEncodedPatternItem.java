@@ -91,22 +91,64 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
     }
 
     private static CompoundTag writeGenericItem(GenericStack gs) {
-        // строго AEItemKey + количество
+        // строго AEItemKey + количество (+ NBT, если есть)
         var t = new CompoundTag();
         var key = (AEItemKey) gs.what();
-        t.putString("item", key.getModId() + ":" + key.getId());
+        t.putString("item", key.getId().toString());
         t.putLong("amount", gs.amount());
+        // Сохраняем полную NBT, если предмет вариантный (как сингулярности)
+        try {
+            var stack = key.toStack((int) Math.max(1, Math.min(gs.amount(), 64)));
+            if (stack.hasTag()) {
+                t.put("nbt", stack.getTag().copy());
+            }
+        } catch (Exception ignored) {
+        }
         return t;
     }
 
     private static GenericStack readGenericItem(CompoundTag t) {
         if (t.isEmpty() || !t.contains("item", Tag.TAG_STRING)) return null;
 
-        var id = ResourceLocation.parse(t.getString("item"));
+        String itemId = t.getString("item");
+        // Нормализуем дублированный namespace общего вида: ns:ns:item -> ns:item
+        int firstColon = itemId.indexOf(":");
+        if (firstColon > 0) {
+            int secondColon = itemId.indexOf(":", firstColon + 1);
+            if (secondColon > firstColon) {
+                String ns1 = itemId.substring(0, firstColon);
+                String ns2 = itemId.substring(firstColon + 1, secondColon);
+                if (ns1.equals(ns2)) {
+                    String original = itemId;
+                    itemId = ns1 + ":" + itemId.substring(secondColon + 1);
+                    com.gasai.ccapplied.CCApplied.LOG.warn("[ExtremePattern] Fixed duplicate namespace in item ID: {} -> {}", original, itemId);
+                }
+            }
+        }
+
+        ResourceLocation id;
+        try {
+            id = ResourceLocation.parse(itemId);
+        } catch (Exception e) {
+            com.gasai.ccapplied.CCApplied.LOG.error("[ExtremePattern] Failed to parse item ID: {}", itemId, e);
+            return null;
+        }
+
         var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id); // получаем сам Item
+        if (item == null) {
+            com.gasai.ccapplied.CCApplied.LOG.warn("[ExtremePattern] Item not found: {}", id);
+            return null;
+        }
 
         var amount = t.contains("amount", Tag.TAG_LONG) ? t.getLong("amount") : 1L;
-        var key = AEItemKey.of(item); // вот так — через ItemLike, не через ResourceLocation
+        // Восстанавливаем ItemStack с NBT, чтобы ключ сохранил вариативность
+        var stack = new ItemStack(item, (int) Math.max(1, Math.min(amount, 64)));
+        if (t.contains("nbt", Tag.TAG_COMPOUND)) {
+            try {
+                stack.setTag(t.getCompound("nbt").copy());
+            } catch (Exception ignored) {}
+        }
+        var key = AEItemKey.of(stack);
 
         return new GenericStack(key, amount);
     }
@@ -212,12 +254,21 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
             first = false;
         }
 
-        first = true;
+        // Агрегируем входы по ключу (учитывая NBT) чтобы показывать "Item xN" вместо дубликатов
+        java.util.Map<appeng.api.stacks.AEKey, Long> totals = new java.util.LinkedHashMap<>();
         for (var input : details.getInputs()) {
             var primaryInputTemplate = input.getPossibleInputs()[0];
-            var primary = new GenericStack(primaryInputTemplate.what(),
-                    primaryInputTemplate.amount() * input.getMultiplier());
-            lines.add(Component.empty().append(first ? with : and).append(getStackComponent(primary)));
+            var key = primaryInputTemplate.what();
+            long add = primaryInputTemplate.amount() * input.getMultiplier();
+            totals.merge(key, add, Long::sum);
+        }
+
+        first = true;
+        for (var entry : totals.entrySet()) {
+            var key = entry.getKey();
+            long amt = entry.getValue();
+            var gs = new GenericStack(key, amt);
+            lines.add(Component.empty().append(first ? with : and).append(getStackComponent(gs)));
             first = false;
         }
 

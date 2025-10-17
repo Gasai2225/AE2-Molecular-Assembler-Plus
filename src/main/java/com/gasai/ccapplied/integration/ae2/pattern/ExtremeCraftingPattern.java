@@ -113,17 +113,21 @@ public class ExtremeCraftingPattern implements IPatternDetails {
     }
     
     /**
-     * Возвращает sparse inputs для загрузки в ConfigInventory
-     * Теперь возвращаем только не-null элементы
+     * Плотное представление входов 9x9: массив длиной 81, индексы совпадают с позициями в сетке.
+     * Основано на исходном ItemStack[] при кодировании, чтобы сохранить размещение.
      */
-    public GenericStack[] getSparseInputs() {
-        java.util.List<GenericStack> sparseList = new java.util.ArrayList<>();
-        for (IInput input : inputs) {
-            if (input != null) {
-                sparseList.add(input.getPossibleInputs()[0]);
+    public GenericStack[] getDenseInputs81() {
+        GenericStack[] dense = new GenericStack[SLOTS];
+        for (int i = 0; i < Math.min(SLOTS, inputStacks.length); i++) {
+            ItemStack st = inputStacks[i];
+            if (st != null && !st.isEmpty()) {
+                AEItemKey key = AEItemKey.of(st);
+                if (key != null) {
+                    dense[i] = new GenericStack(key, st.getCount());
+                }
             }
         }
-        return sparseList.toArray(new GenericStack[0]);
+        return dense;
     }
     
     public int getWidth() {

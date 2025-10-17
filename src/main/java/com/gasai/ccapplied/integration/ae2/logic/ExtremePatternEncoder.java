@@ -112,9 +112,25 @@ public final class ExtremePatternEncoder {
             
                    // Проверяем рецепт ExtendedCrafting
                    ItemStack[] craftingGrid = convertToCraftingGrid(inputStacks);
+                   com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeEncoder] Checking recipe for {} input stacks, craftingGrid length: {}", 
+                       inputStacks.length, craftingGrid.length);
+                   
+                   // Логируем содержимое craftingGrid
+                   int nonEmptySlots = 0;
+                   for (int i = 0; i < craftingGrid.length; i++) {
+                       if (craftingGrid[i] != null && !craftingGrid[i].isEmpty()) {
+                           nonEmptySlots++;
+                           if (nonEmptySlots <= 5) { // Логируем только первые 5 предметов
+                               com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeEncoder] Slot {}: {}", i, craftingGrid[i].getDisplayName().getString());
+                           }
+                       }
+                   }
+                   com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeEncoder] Total non-empty slots in craftingGrid: {}", nonEmptySlots);
+                   
                    var recipe = ExtendedCraftingRecipeHelper.findRecipe(craftingGrid, level);
                    
                    if (recipe == null) {
+                       com.gasai.ccapplied.CCApplied.LOG.warn("[ExtremeEncoder] No recipe found for craftingGrid with {} non-empty slots", nonEmptySlots);
                        return EncodeResult.failure(Component.translatable("gui.ccapplied.extreme_no_valid_recipe"));
                    }
                    
