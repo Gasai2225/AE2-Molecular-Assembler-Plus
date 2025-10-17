@@ -1,9 +1,9 @@
 package com.gasai.ccapplied.core.registry;
 
 import com.gasai.ccapplied.CCApplied;
-import com.gasai.ccapplied.integration.ae2.pattern.ExtremeBlankPatternItem;
-import com.gasai.ccapplied.integration.ae2.pattern.ExtremeEncodedPatternItem;
-import com.gasai.ccapplied.integration.ae2.items.ExtremePatternTerminalItem;
+import com.gasai.ccapplied.items.ExtremeBlankPatternItem;
+import com.gasai.ccapplied.items.ExtremeEncodedPatternItem;
+import com.gasai.ccapplied.items.ExtremePatternTerminalItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -33,8 +33,8 @@ public final class CCItems {
         "extreme_pattern_terminal",
         () -> new appeng.items.parts.PartItem<>(
                 new Item.Properties(),
-                com.gasai.ccapplied.integration.ae2.part.ExtremePatternEncodingTerminalPart.class,
-                com.gasai.ccapplied.integration.ae2.part.ExtremePatternEncodingTerminalPart::new
+                com.gasai.ccapplied.parts.ExtremePatternEncodingTerminalPart.class,
+                com.gasai.ccapplied.parts.ExtremePatternEncodingTerminalPart::new
         )
 );
 

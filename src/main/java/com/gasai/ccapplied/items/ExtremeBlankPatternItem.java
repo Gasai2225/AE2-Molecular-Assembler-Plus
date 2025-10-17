@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.pattern;
+package com.gasai.ccapplied.items;
 
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;

@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.pattern;
+package com.gasai.ccapplied.patterns;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -9,6 +9,7 @@ import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.IPatternDetailsDecoder;
 import appeng.api.stacks.AEItemKey;
 import com.gasai.ccapplied.core.registry.CCItems;
+import com.gasai.ccapplied.patterns.ExtremeCraftingPattern;
 
 /**
  * Декодер для экстремальных паттернов 9x9

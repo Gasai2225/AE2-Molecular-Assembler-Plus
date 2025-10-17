@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.extendedcrafting;
+package com.gasai.ccapplied.crafting;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;

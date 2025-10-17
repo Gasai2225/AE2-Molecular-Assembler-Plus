@@ -1,9 +1,9 @@
-package com.gasai.ccapplied.integration.ae2.client;
+package com.gasai.ccapplied.screens;
 
 import com.gasai.ccapplied.CCApplied;
 import com.gasai.ccapplied.core.client.CCAppliedInitScreens;
 import com.gasai.ccapplied.core.registry.CCMenuTypes;
-import com.gasai.ccapplied.integration.ae2.client.ExtremePatternEncodingTermScreen;
+import com.gasai.ccapplied.screens.ExtremePatternEncodingTermScreen;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

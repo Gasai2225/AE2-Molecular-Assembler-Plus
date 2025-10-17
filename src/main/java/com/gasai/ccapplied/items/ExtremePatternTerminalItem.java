@@ -1,6 +1,6 @@
-package com.gasai.ccapplied.integration.ae2.items;
+package com.gasai.ccapplied.items;
 
-import com.gasai.ccapplied.integration.ae2.part.ExtremePatternEncodingTerminalPart;
+import com.gasai.ccapplied.parts.ExtremePatternEncodingTerminalPart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import javax.annotation.Nonnull;

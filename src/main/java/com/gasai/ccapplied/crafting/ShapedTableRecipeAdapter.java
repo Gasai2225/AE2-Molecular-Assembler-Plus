@@ -1,22 +1,26 @@
-package com.gasai.ccapplied.integration.extendedcrafting;
+package com.gasai.ccapplied.crafting;
 
-import com.blakebr0.extendedcrafting.crafting.recipe.ShapelessTableRecipe;
+import com.blakebr0.extendedcrafting.crafting.recipe.ShapedTableRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.Optional;
 
 /**
- * Адаптер для ShapelessTableRecipe из ExtendedCrafting
+ * Адаптер для ShapedTableRecipe из ExtendedCrafting
  */
-public class ShapelessTableRecipeAdapter implements ITableRecipeAdapter {
+public class ShapedTableRecipeAdapter implements ITableRecipeAdapter {
     
-    private final ShapelessTableRecipe recipe;
+    private final ShapedTableRecipe recipe;
     private final int tier;
+    private final int width;
+    private final int height;
     
-    public ShapelessTableRecipeAdapter(ShapelessTableRecipe recipe) {
+    public ShapedTableRecipeAdapter(ShapedTableRecipe recipe) {
         this.recipe = recipe;
         this.tier = recipe.getTier();
+        this.width = recipe.getWidth();
+        this.height = recipe.getHeight();
     }
     
     @Override
@@ -41,5 +45,19 @@ public class ShapelessTableRecipeAdapter implements ITableRecipeAdapter {
     @Override
     public int tier() {
         return tier;
+    }
+    
+    /**
+     * Получает ширину рецепта
+     */
+    public int width() {
+        return width;
+    }
+    
+    /**
+     * Получает высоту рецепта
+     */
+    public int height() {
+        return height;
     }
 }

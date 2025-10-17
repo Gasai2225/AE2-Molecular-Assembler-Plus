@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.extendedcrafting;
+package com.gasai.ccapplied.crafting;
 
 import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import net.minecraft.resources.ResourceLocation;

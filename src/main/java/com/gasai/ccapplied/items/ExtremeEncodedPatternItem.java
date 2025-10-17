@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.pattern;
+package com.gasai.ccapplied.items;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import com.gasai.ccapplied.patterns.ExtremeCraftingPattern;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 

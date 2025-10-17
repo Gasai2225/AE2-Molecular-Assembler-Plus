@@ -1,7 +1,7 @@
 package com.gasai.ccapplied.core.registry;
 
 import com.gasai.ccapplied.CCApplied;
-import com.gasai.ccapplied.integration.ae2.menu.ExtremePatternEncodingTermMenu;
+import com.gasai.ccapplied.menus.ExtremePatternEncodingTermMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;

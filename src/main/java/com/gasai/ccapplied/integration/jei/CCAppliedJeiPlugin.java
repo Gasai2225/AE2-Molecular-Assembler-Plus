@@ -1,8 +1,8 @@
 package com.gasai.ccapplied.integration.jei;
 
 import com.gasai.ccapplied.CCApplied;
-import com.gasai.ccapplied.integration.ae2.client.ExtremePatternEncodingTermScreen;
-import com.gasai.ccapplied.integration.ae2.menu.ExtremePatternEncodingTermMenu;
+import com.gasai.ccapplied.screens.ExtremePatternEncodingTermScreen;
+import com.gasai.ccapplied.menus.ExtremePatternEncodingTermMenu;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;

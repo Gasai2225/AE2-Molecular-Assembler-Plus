@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.pattern;
+package com.gasai.ccapplied.patterns;
 
 import com.gasai.ccapplied.CCApplied;
 import appeng.api.crafting.PatternDetailsHelper;

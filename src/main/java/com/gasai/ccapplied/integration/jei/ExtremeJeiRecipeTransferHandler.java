@@ -1,6 +1,6 @@
 package com.gasai.ccapplied.integration.jei;
 
-import com.gasai.ccapplied.integration.ae2.menu.ExtremePatternEncodingTermMenu;
+import com.gasai.ccapplied.menus.ExtremePatternEncodingTermMenu;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;

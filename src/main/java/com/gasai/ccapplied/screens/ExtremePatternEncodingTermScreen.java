@@ -1,7 +1,6 @@
-package com.gasai.ccapplied.integration.ae2.client;
+package com.gasai.ccapplied.screens;
 
-import com.gasai.ccapplied.integration.ae2.menu.ExtremePatternEncodingTermMenu;
-import com.gasai.ccapplied.integration.ae2.widgets.ExtremePatternTerminalWidgets;
+import com.gasai.ccapplied.menus.ExtremePatternEncodingTermMenu;
 import appeng.client.gui.me.common.MEStorageScreen;
 import appeng.client.gui.style.ScreenStyle;
 import net.minecraft.network.chat.Component;

@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.slot;
+package com.gasai.ccapplied.slots;
 
 import net.minecraft.world.item.ItemStack;
 import appeng.menu.slot.FakeSlot;

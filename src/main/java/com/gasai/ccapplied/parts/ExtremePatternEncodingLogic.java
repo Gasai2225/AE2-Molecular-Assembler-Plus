@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.part;
+package com.gasai.ccapplied.parts;
 
 import com.gasai.ccapplied.core.registry.CCItems;
 import com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalLogicHost;
@@ -18,9 +18,9 @@ import appeng.util.ConfigInventory;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.InternalInventoryHost;
 
-import com.gasai.ccapplied.integration.ae2.pattern.ExtremeBlankPatternItem;
-import com.gasai.ccapplied.integration.ae2.pattern.ExtremeCraftingPattern;
-import com.gasai.ccapplied.integration.ae2.pattern.ExtremeEncodedPatternItem;
+import com.gasai.ccapplied.items.ExtremeBlankPatternItem;
+import com.gasai.ccapplied.patterns.ExtremeCraftingPattern;
+import com.gasai.ccapplied.items.ExtremeEncodedPatternItem;
 
 /**
  * Логика кодирования для экстремального (9x9) шаблона.

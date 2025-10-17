@@ -1,7 +1,7 @@
 package com.gasai.ccapplied.integration.jei;
 
 import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
-import com.gasai.ccapplied.integration.ae2.menu.ExtremePatternEncodingTermMenu;
+import com.gasai.ccapplied.menus.ExtremePatternEncodingTermMenu;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
@@ -76,13 +76,6 @@ public class ECJeiRecipeTransferHandler implements IRecipeTransferHandler<Extrem
             w = 1;
             h = 0;
         }
-        // Лог для диагностики shapeless/nbt
-        try {
-            com.gasai.ccapplied.CCApplied.LOG.info("[JEI EC Transfer] doTransfer={} type={} w={} h={} inputs={} first={}",
-                    doTransfer,
-                    (recipe instanceof com.blakebr0.extendedcrafting.crafting.recipe.ShapedTableRecipe) ? "shaped" : "shapeless",
-                    w, h, inputs.size(), inputs.isEmpty() ? "empty" : inputs.get(0));
-        } catch (Exception ignored) {}
         menu.requestApplyJeiGrid(w, h, inputs);
         return null;
     }

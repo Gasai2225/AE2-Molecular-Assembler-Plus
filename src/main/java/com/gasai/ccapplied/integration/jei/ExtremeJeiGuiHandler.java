@@ -1,6 +1,6 @@
 package com.gasai.ccapplied.integration.jei;
 
-import com.gasai.ccapplied.integration.ae2.client.ExtremePatternEncodingTermScreen;
+import com.gasai.ccapplied.screens.ExtremePatternEncodingTermScreen;
 import mezz.jei.api.gui.handlers.IGuiClickableArea;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.recipe.RecipeType;

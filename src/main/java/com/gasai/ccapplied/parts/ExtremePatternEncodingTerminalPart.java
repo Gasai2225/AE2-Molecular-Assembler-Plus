@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.part;
+package com.gasai.ccapplied.parts;
 
 import java.util.List;
 
@@ -41,13 +41,11 @@ public class ExtremePatternEncodingTerminalPart extends AbstractTerminalPart
 
     public ExtremePatternEncodingTerminalPart(IPartItem<?> partItem) {
         super(partItem);
-        com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] ctor created part {}", partItem.asItem());
     }
 
     @Override
     public void addAdditionalDrops(List<ItemStack> drops, boolean wrenched) {
         super.addAdditionalDrops(drops, wrenched);
-        com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] addAdditionalDrops wrenched={}", wrenched);
         for (var is : this.logic.getBlankPatternInv()) {
             drops.add(is);
         }
@@ -77,7 +75,6 @@ public class ExtremePatternEncodingTerminalPart extends AbstractTerminalPart
 
     @Override
     public MenuType<?> getMenuType(net.minecraft.world.entity.player.Player p) {
-        com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] getMenuType for {} return {}", p.getGameProfile().getName(), com.gasai.ccapplied.core.registry.CCMenuTypes.EXTREME_PATTERN_TERM.getId());
         return com.gasai.ccapplied.core.registry.CCMenuTypes.EXTREME_PATTERN_TERM.get();
     }
 
@@ -92,19 +89,16 @@ public class ExtremePatternEncodingTerminalPart extends AbstractTerminalPart
     @Override
     public net.minecraft.world.level.Level getLevel() {
     var be = getHost().getBlockEntity();
-    com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] getLevel host={} beLevel={}", getHost(), be != null ? be.getLevel() : null);
     return be != null ? be.getLevel() : null;
     }
 
     @Override
     public void markForSave() {
-        com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] markForSave");
         getHost().markForSave();
     }
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> cap) {
-        com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] getCapability {}", cap);
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
             return LazyOptional.of(() -> logic.getBlankPatternInv().toItemHandler()).cast();
         }
@@ -113,24 +107,18 @@ public class ExtremePatternEncodingTerminalPart extends AbstractTerminalPart
     
     @Override
     public boolean onPartActivate(Player player, InteractionHand hand, Vec3 pos) {
-        com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] onPartActivate by {} on {}", player.getGameProfile().getName(), player.level().isClientSide() ? "CLIENT" : "SERVER");
         if (player.level().isClientSide()) {
-            com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] Client-side activation, returning true");
             return true;
         }
         var type = getMenuType(player);
         if (type != null) {
-            com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] Opening menu with type: {}", type);
             try {
                 appeng.menu.MenuOpener.open(type, player, appeng.menu.locator.MenuLocators.forPart(this));
-                com.gasai.ccapplied.CCApplied.LOG.info("[ExtremePart] Menu opened successfully");
                 return true;
             } catch (Exception e) {
-                com.gasai.ccapplied.CCApplied.LOG.error("[ExtremePart] Failed to open menu", e);
                 return false;
             }
         }
-        com.gasai.ccapplied.CCApplied.LOG.warn("[ExtremePart] MenuType is null");
         return false;
     }
 

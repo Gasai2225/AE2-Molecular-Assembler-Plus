@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.slot;
+package com.gasai.ccapplied.slots;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -94,7 +94,7 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
             }
             
             // Получаем превью рецепта из ExtendedCrafting
-            ItemStack result = com.gasai.ccapplied.integration.extendedcrafting.ExtendedCraftingRecipeHelper.getRecipePreview(
+            ItemStack result = com.gasai.ccapplied.crafting.ExtendedCraftingRecipeHelper.getRecipePreview(
                 craftingGrid, player.level());
             
             // Гарантируем, что результат не null

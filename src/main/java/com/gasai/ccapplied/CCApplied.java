@@ -3,7 +3,7 @@ package com.gasai.ccapplied;
 import appeng.api.crafting.PatternDetailsHelper;
 import com.gasai.ccapplied.core.registry.CCItems;
 import com.gasai.ccapplied.core.registry.CCMenuTypes;
-import com.gasai.ccapplied.integration.ae2.pattern.ExtremePatternDecoder;
+import com.gasai.ccapplied.patterns.ExtremePatternDecoder;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;

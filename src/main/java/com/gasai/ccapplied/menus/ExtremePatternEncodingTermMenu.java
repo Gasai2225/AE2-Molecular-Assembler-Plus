@@ -1,4 +1,4 @@
-package com.gasai.ccapplied.integration.ae2.menu;
+package com.gasai.ccapplied.menus;
 
 import com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalMenuHost;
 import com.gasai.ccapplied.CCApplied;
@@ -15,11 +15,10 @@ import appeng.menu.me.common.MEStorageMenu;
 import appeng.menu.slot.FakeSlot;
 import appeng.menu.SlotSemantics;
 
-import com.gasai.ccapplied.integration.ae2.part.ExtremePatternEncodingLogic;
-import com.gasai.ccapplied.integration.ae2.slot.ExtremeBlankPatternSlot;
-import com.gasai.ccapplied.integration.ae2.slot.ExtremeEncodedPatternSlot;
-import com.gasai.ccapplied.integration.ae2.slot.ExtremeCraftingTermSlot;
-import com.gasai.ccapplied.integration.ae2.logic.ExtremePatternEncoder;
+import com.gasai.ccapplied.parts.ExtremePatternEncodingLogic;
+import com.gasai.ccapplied.slots.ExtremeBlankPatternSlot;
+import com.gasai.ccapplied.slots.ExtremeEncodedPatternSlot;
+import com.gasai.ccapplied.slots.ExtremeCraftingTermSlot;
 import com.gasai.ccapplied.core.registry.CCItems;
 
 import java.util.List;
@@ -302,7 +301,7 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
             }
             
             
-            ItemStack result = com.gasai.ccapplied.integration.extendedcrafting.ExtendedCraftingRecipeHelper.getRecipePreview(craftingGrid, getPlayer().level());
+            ItemStack result = com.gasai.ccapplied.crafting.ExtendedCraftingRecipeHelper.getRecipePreview(craftingGrid, getPlayer().level());
             return result != null ? result : ItemStack.EMPTY;
         } catch (Exception e) {
             return ItemStack.EMPTY;

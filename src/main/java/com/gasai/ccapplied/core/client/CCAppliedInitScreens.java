@@ -35,17 +35,13 @@ public final class CCAppliedInitScreens {
             ScreenFactory<M, U> factory,
             String stylePath) {
         
-        CCApplied.LOG.info("[CCAppliedInitScreens] Registering screen for menu type: {} with style: {}", type, stylePath);
         SCREEN_FACTORIES.put(type, factory);
         
         // Регистрируем экран через стандартную систему Minecraft
         MenuScreens.<M, U>register(type, (menu, playerInv, title) -> {
-            CCApplied.LOG.info("[CCAppliedInitScreens] Creating screen for menu: {}, player: {}", 
-                menu.getClass().getSimpleName(), playerInv.player.getGameProfile().getName());
             
             try {
                 var style = StyleManager.loadStyleDoc(stylePath);
-                CCApplied.LOG.info("[CCAppliedInitScreens] Style loaded successfully: {}", stylePath);
                 
                 @SuppressWarnings("unchecked")
                 ScreenFactory<M, U> typedFactory = (ScreenFactory<M, U>) SCREEN_FACTORIES.get(type);
@@ -54,16 +50,12 @@ public final class CCAppliedInitScreens {
                 }
                 
                 var screen = typedFactory.create(menu, playerInv, title, style);
-                CCApplied.LOG.info("[CCAppliedInitScreens] Screen created successfully: {}", screen.getClass().getSimpleName());
                 return screen;
             } catch (Exception e) {
-                CCApplied.LOG.error("[CCAppliedInitScreens] Failed to create screen for menu: {}, style: {}", 
-                    menu.getClass().getSimpleName(), stylePath, e);
                 throw new RuntimeException("Failed to create screen", e);
             }
         });
         
-        CCApplied.LOG.info("[CCAppliedInitScreens] Screen registration completed for: {}", type);
     }
     
     /**
