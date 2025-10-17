@@ -1,5 +1,6 @@
 {
   "item.ccapplied.extreme_crafting_pattern": "Extreme Pattern",
   "item.ccapplied.extreme_blank_pattern": "Blank Extreme Pattern",
-  "item.ccapplied.extreme_blank_pattern.desc": "Used to encode Extreme Crafting recipes."
+  "item.ccapplied.extreme_blank_pattern.desc": "Used to encode Extreme Crafting recipes.",
+  "gui.ccapplied.ExtremePatternEncoding": "Extreme Pattern Encoding Terminal"
 }

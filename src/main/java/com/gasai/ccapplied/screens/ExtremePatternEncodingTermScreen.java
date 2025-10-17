@@ -44,23 +44,7 @@ public class ExtremePatternEncodingTermScreen extends MEStorageScreen<ExtremePat
         
         com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeScreen] Extreme pattern terminal widgets initialized");
     }
-    
-    @Override
-    public void drawFG(net.minecraft.client.gui.GuiGraphics guiGraphics, int offsetX, int offsetY, int mouseX, int mouseY) {
-        // Рисуем заголовок экстремального терминала
-        guiGraphics.drawString(font, "Extreme Pattern Terminal", offsetX + 8, offsetY + 6, 0x404040, false);
-        guiGraphics.drawString(font, "9x9 Crafting Grid", offsetX + 8, offsetY + imageHeight - 20, 0x404040, false);
-    }
 
-    // Убираем переопределение renderBg, так как это final метод в AEBaseScreen
-
-    // Метод рендеринга сетки будет использоваться в будущем для кастомного отображения
-
-    // Убираем переопределение render, так как это может конфликтовать с AEBaseScreen
-    
-    /**
-     * Кастомная кнопка кодирования экстремального паттерна
-     */
     private static class ExtremeEncodeButton extends appeng.client.gui.widgets.IconButton {
         private final ExtremePatternEncodingTermMenu menu;
 

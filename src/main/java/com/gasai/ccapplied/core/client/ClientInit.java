@@ -11,8 +11,6 @@ public final class ClientInit {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent e) {
-        // Регистрация экранов теперь происходит в соответствующих хелперах
-        // Например, ExtremePatternTerminalClientHelper для экстремального терминала
     }
 }
 
