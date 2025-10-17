@@ -1,5 +1,8 @@
 package com.gasai.ccapplied.patterns;
 
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -8,12 +11,13 @@ import appeng.api.crafting.IPatternDetails;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
+import appeng.api.stacks.KeyCounter;
 import com.gasai.ccapplied.core.registry.CCItems;
 
 /**
  * Паттерн для экстремального крафта 9x9 - только предметы, shaped/unshaped
  */
-public class ExtremeCraftingPattern implements IPatternDetails {
+public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemblerSupportedPattern {
     
     public static final int SLOTS = 81; // 9x9 = 81 слот
     
@@ -141,5 +145,121 @@ public class ExtremeCraftingPattern implements IPatternDetails {
     @Nullable
     public net.minecraft.resources.ResourceLocation getRecipeId() {
         return recipeId;
+    }
+    
+    // Реализация IMolecularAssemblerSupportedPattern
+    
+    @Override
+    public ItemStack assemble(Container container, Level level) {
+        // Проверяем, что в контейнере есть все необходимые предметы
+        for (int i = 0; i < Math.min(SLOTS, inputStacks.length); i++) {
+            ItemStack patternStack = inputStacks[i];
+            if (!patternStack.isEmpty()) {
+                ItemStack containerStack = container.getItem(i);
+                if (containerStack.isEmpty() || 
+                    !ItemStack.isSameItemSameTags(patternStack, containerStack) ||
+                    containerStack.getCount() < patternStack.getCount()) {
+                    return ItemStack.EMPTY; // Недостаточно предметов
+                }
+            }
+        }
+        
+        // Если все предметы на месте, возвращаем результат
+        return outputStack.copy();
+    }
+    
+    @Override
+    public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
+        NonNullList<ItemStack> remaining = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack stack = container.getItem(i);
+            if (!stack.isEmpty()) {
+                // Вычитаем количество, использованное в рецепте
+                ItemStack patternStack = (i < inputStacks.length) ? inputStacks[i] : ItemStack.EMPTY;
+                if (!patternStack.isEmpty()) {
+                    int used = patternStack.getCount();
+                    int remainingCount = stack.getCount() - used;
+                    if (remainingCount > 0) {
+                        ItemStack remainingStack = stack.copy();
+                        remainingStack.setCount(remainingCount);
+                        remaining.set(i, remainingStack);
+                    } else {
+                        remaining.set(i, ItemStack.EMPTY);
+                    }
+                } else {
+                    remaining.set(i, ItemStack.EMPTY);
+                }
+            } else {
+                remaining.set(i, ItemStack.EMPTY);
+            }
+        }
+        return remaining;
+    }
+    
+    @Override
+    public boolean isItemValid(int slot, AEItemKey key, Level level) {
+        if (slot < 0 || slot >= SLOTS) {
+            return false;
+        }
+        
+        // Если слот пустой в паттерне, то он должен быть пустым и в сетке крафта
+        if (slot >= inputStacks.length || inputStacks[slot].isEmpty()) {
+            return key == null; // Только пустые предметы разрешены в пустых слотах
+        }
+        
+        // Проверяем, соответствует ли предмет паттерну
+        ItemStack patternStack = inputStacks[slot];
+        AEItemKey patternKey = AEItemKey.of(patternStack);
+        return patternKey != null && patternKey.equals(key);
+    }
+    
+    @Override
+    public boolean isSlotEnabled(int slot) {
+        if (slot < 0 || slot >= SLOTS) {
+            return false;
+        }
+        
+        // Слот включен, если в нем есть предмет в паттерне
+        if (slot < inputStacks.length) {
+            return !inputStacks[slot].isEmpty();
+        }
+        
+        return false;
+    }
+    
+    @Override
+    public void fillCraftingGrid(KeyCounter[] table, IMolecularAssemblerSupportedPattern.CraftingGridAccessor gridAccessor) {
+        // Сначала очищаем все слоты
+        for (int i = 0; i < SLOTS; i++) {
+            gridAccessor.set(i, ItemStack.EMPTY);
+        }
+        
+        // Заполняем слоты согласно паттерну
+        for (int i = 0; i < Math.min(SLOTS, inputStacks.length); i++) {
+            ItemStack patternStack = inputStacks[i];
+            if (!patternStack.isEmpty()) {
+                // Ищем соответствующий предмет в таблице
+                AEItemKey patternKey = AEItemKey.of(patternStack);
+                if (patternKey != null) {
+                    // Ищем в таблице предмет с нужным количеством
+                    for (KeyCounter counter : table) {
+                        if (counter != null && !counter.isEmpty()) {
+                            var entry = counter.iterator().next();
+                            if (entry.getKey() instanceof AEItemKey itemKey && 
+                                itemKey.equals(patternKey) && 
+                                entry.getLongValue() >= patternStack.getCount()) {
+                                
+                                ItemStack stack = itemKey.toStack(patternStack.getCount());
+                                gridAccessor.set(i, stack);
+                                
+                                // Уменьшаем количество в таблице
+                                counter.remove(itemKey, patternStack.getCount());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

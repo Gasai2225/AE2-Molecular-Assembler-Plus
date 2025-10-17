@@ -1,0 +1,46 @@
+{
+  "$schema": "schema.json",
+  "includes": ["common/common.json", "common/ext_player_inventory.json"],
+  "background": {
+    "texture": "guis/extreme_molecular_assembler.png",
+    "srcRect": [0, 0, 256, 256]
+  },
+  "slots": {
+    "MACHINE_CRAFTING_GRID": {
+      "left": 19,
+      "top": 5,
+      "grid": "BREAK_AFTER_9COLS"
+    },
+    "ENCODED_PATTERN": {
+      "left": 223,
+      "top": 36
+    },
+    "MACHINE_OUTPUT": {
+      "left": 223,
+      "top": 68
+    }
+  },
+  "text": {
+    "dialog_title": {
+      "text": {
+        "translate": "gui.ae2.ExtremeMolecularAssembler"
+      },
+      "position": {
+        "left": 8,
+        "top": 6
+      }
+    }
+  },
+  "images": {
+    "progressBar": {
+      "texture": "guis/molecular_assembler.png",
+      "srcRect": [148, 201, 6, 18]
+    }
+  },
+  "widgets": {
+    "progressBar": {
+      "left": 245,
+      "top": 68
+    }
+  }
+}

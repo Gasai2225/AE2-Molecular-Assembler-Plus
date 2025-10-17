@@ -1,0 +1,12 @@
+{
+  "gui.ccapplied.ExtremePatternEncoding": "Экстремальный Терминал Кодирования Паттернов",
+  "gui.ccapplied.extreme_encode_pattern": "Закодировать Паттерн",
+  "gui.ccapplied.extreme_clear_pattern": "Очистить",
+  "gui.ccapplied.ExtremeMolecularAssembler": "Экстремальный Молекулярный Сборщик",
+  "gui.ae2.ExtremeMolecularAssembler": "Экстремальный Молекулярный Сборщик",
+  "item.ccapplied.extreme_blank_pattern": "Пустой Экстремальный Паттерн",
+  "item.ccapplied.extreme_blank_pattern.desc": "Используется для кодирования экстремальных рецептов крафта (9x9)",
+  "item.ccapplied.extreme_crafting_pattern": "Экстремальный Паттерн Крафта",
+  "item.ccapplied.extreme_pattern_terminal": "Экстремальный Терминал Паттернов",
+  "block.ccapplied.extreme_molecular_assembler": "Экстремальный Молекулярный Сборщик"
+}

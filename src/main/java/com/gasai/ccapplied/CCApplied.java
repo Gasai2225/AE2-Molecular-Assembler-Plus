@@ -3,6 +3,7 @@ package com.gasai.ccapplied;
 import appeng.api.crafting.PatternDetailsHelper;
 import com.gasai.ccapplied.core.registry.CCItems;
 import com.gasai.ccapplied.core.registry.CCMenuTypes;
+import com.gasai.ccapplied.core.registry.CCBlocks;
 import com.gasai.ccapplied.patterns.ExtremePatternDecoder;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -26,6 +27,10 @@ public final class CCApplied {
 
     public CCApplied() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        
+        CCBlocks.BLOCKS.register(modBus);
+        CCBlocks.ITEMS.register(modBus);
+        CCBlocks.BLOCK_ENTITIES.register(modBus);
         CCItems.ITEMS.register(modBus);
         CCMenuTypes.MENUS.register(modBus);
 

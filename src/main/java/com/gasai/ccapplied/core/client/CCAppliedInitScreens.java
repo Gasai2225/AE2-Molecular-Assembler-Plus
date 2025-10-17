@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.gasai.ccapplied.CCApplied;
+import com.gasai.ccapplied.screens.ExtremeMolecularAssemblerScreen;
+import com.gasai.ccapplied.menus.ExtremeMolecularAssemblerMenu;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;

@@ -1,6 +1,12 @@
 {
-  "item.ccapplied.extreme_crafting_pattern": "Extreme Pattern",
-  "item.ccapplied.extreme_blank_pattern": "Blank Extreme Pattern",
-  "item.ccapplied.extreme_blank_pattern.desc": "Used to encode Extreme Crafting recipes.",
-  "gui.ccapplied.ExtremePatternEncoding": "Extreme Pattern Encoding Terminal"
+  "gui.ccapplied.ExtremePatternEncoding": "Extreme Pattern Encoding Terminal",
+  "gui.ccapplied.extreme_encode_pattern": "Encode Pattern",
+  "gui.ccapplied.extreme_clear_pattern": "Clear",
+  "gui.ccapplied.ExtremeMolecularAssembler": "Extreme Molecular Assembler",
+  "gui.ae2.ExtremeMolecularAssembler": "Extreme Molecular Assembler",
+  "item.ccapplied.extreme_blank_pattern": "Extreme Blank Pattern",
+  "item.ccapplied.extreme_blank_pattern.desc": "Used to encode extreme crafting patterns (9x9)",
+  "item.ccapplied.extreme_crafting_pattern": "Extreme Crafting Pattern",
+  "item.ccapplied.extreme_pattern_terminal": "Extreme Pattern Terminal",
+  "block.ccapplied.extreme_molecular_assembler": "Extreme Molecular Assembler"
 }

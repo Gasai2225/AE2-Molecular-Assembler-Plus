@@ -65,6 +65,11 @@ minecraft {
     }
 }
 
+mixin {
+    add sourceSets.main, "ccapplied.refmap.json"
+    config "ccapplied.mixins.json"
+}
+
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
