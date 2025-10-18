@@ -6,7 +6,7 @@ import appeng.menu.slot.RestrictedInputSlot;
 import com.gasai.ccapplied.core.registry.CCItems;
 
 /**
- * Слот для закодированных экстремальных паттернов
+ * Slot for encoded extreme patterns
  */
 public class ExtremeEncodedPatternSlot extends RestrictedInputSlot {
     
@@ -16,7 +16,6 @@ public class ExtremeEncodedPatternSlot extends RestrictedInputSlot {
 
     @Override
     public boolean mayPlace(ItemStack stack) {
-        // Принимаем только наши экстремальные закодированные паттерны
         return !stack.isEmpty() && stack.getItem() == CCItems.EXTREME_CRAFTING_PATTERN.get();
     }
 }

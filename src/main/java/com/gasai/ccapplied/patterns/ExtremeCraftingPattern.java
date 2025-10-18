@@ -15,11 +15,11 @@ import appeng.api.stacks.KeyCounter;
 import com.gasai.ccapplied.core.registry.CCItems;
 
 /**
- * Паттерн для экстремального крафта 9x9 - только предметы, shaped/unshaped
+ * Pattern for extreme crafting 9x9 - items only, shaped/unshaped
  */
 public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemblerSupportedPattern {
     
-    public static final int SLOTS = 81; // 9x9 = 81 слот
+    public static final int SLOTS = 81;
     
     private final AEItemKey definition;
     private final IInput[] inputs;
@@ -67,8 +67,6 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     }
     
     private IInput[] createInputs(GenericStack[] sparseInputs) {
-        // Создаем IInput[] для 9x9 сетки - только предметы
-        // Собираем только не-null элементы в компактный массив
         java.util.List<IInput> inputsList = new java.util.ArrayList<>();
         
         for (GenericStack stack : sparseInputs) {
@@ -81,20 +79,19 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
 
                     @Override
                     public long getMultiplier() {
-                        return 1; // Всегда количество = 1 для крафта
+                        return 1;
                     }
 
                     @Override
                     public boolean isValid(AEKey input, Level level) {
                         if (!(input instanceof AEItemKey)) {
-                            return false; // Только предметы
+                            return false;
                         }
                         return input.equals(stack.what());
                     }
 
                     @Override
                     public @Nullable AEKey getRemainingKey(AEKey template) {
-                        // Для экстремального крафта без остатков
                         return null;
                     }
                 });
@@ -117,8 +114,8 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     }
     
     /**
-     * Плотное представление входов 9x9: массив длиной 81, индексы совпадают с позициями в сетке.
-     * Основано на исходном ItemStack[] при кодировании, чтобы сохранить размещение.
+     * Dense representation of 9x9 inputs: array of length 81, indices match grid positions.
+     * Based on original ItemStack[] during encoding to preserve placement.
      */
     public GenericStack[] getDenseInputs81() {
         GenericStack[] dense = new GenericStack[SLOTS];
@@ -147,11 +144,9 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
         return recipeId;
     }
     
-    // Реализация IMolecularAssemblerSupportedPattern
     
     @Override
     public ItemStack assemble(Container container, Level level) {
-        // Проверяем, что в контейнере есть все необходимые предметы
         for (int i = 0; i < Math.min(SLOTS, inputStacks.length); i++) {
             ItemStack patternStack = inputStacks[i];
             if (!patternStack.isEmpty()) {
@@ -159,12 +154,11 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
                 if (containerStack.isEmpty() || 
                     !ItemStack.isSameItemSameTags(patternStack, containerStack) ||
                     containerStack.getCount() < patternStack.getCount()) {
-                    return ItemStack.EMPTY; // Недостаточно предметов
+                    return ItemStack.EMPTY;
                 }
             }
         }
         
-        // Если все предметы на месте, возвращаем результат
         return outputStack.copy();
     }
     
@@ -174,7 +168,6 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.getItem(i);
             if (!stack.isEmpty()) {
-                // Вычитаем количество, использованное в рецепте
                 ItemStack patternStack = (i < inputStacks.length) ? inputStacks[i] : ItemStack.EMPTY;
                 if (!patternStack.isEmpty()) {
                     int used = patternStack.getCount();
@@ -202,12 +195,10 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
             return false;
         }
         
-        // Если слот пустой в паттерне, то он должен быть пустым и в сетке крафта
         if (slot >= inputStacks.length || inputStacks[slot].isEmpty()) {
-            return key == null; // Только пустые предметы разрешены в пустых слотах
+            return key == null;
         }
         
-        // Проверяем, соответствует ли предмет паттерну
         ItemStack patternStack = inputStacks[slot];
         AEItemKey patternKey = AEItemKey.of(patternStack);
         return patternKey != null && patternKey.equals(key);
@@ -219,7 +210,6 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
             return false;
         }
         
-        // Слот включен, если в нем есть предмет в паттерне
         if (slot < inputStacks.length) {
             return !inputStacks[slot].isEmpty();
         }
@@ -229,19 +219,15 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     
     @Override
     public void fillCraftingGrid(KeyCounter[] table, IMolecularAssemblerSupportedPattern.CraftingGridAccessor gridAccessor) {
-        // Сначала очищаем все слоты
         for (int i = 0; i < SLOTS; i++) {
             gridAccessor.set(i, ItemStack.EMPTY);
         }
         
-        // Заполняем слоты согласно паттерну
         for (int i = 0; i < Math.min(SLOTS, inputStacks.length); i++) {
             ItemStack patternStack = inputStacks[i];
             if (!patternStack.isEmpty()) {
-                // Ищем соответствующий предмет в таблице
                 AEItemKey patternKey = AEItemKey.of(patternStack);
                 if (patternKey != null) {
-                    // Ищем в таблице предмет с нужным количеством
                     for (KeyCounter counter : table) {
                         if (counter != null && !counter.isEmpty()) {
                             var entry = counter.iterator().next();
@@ -252,7 +238,6 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
                                 ItemStack stack = itemKey.toStack(patternStack.getCount());
                                 gridAccessor.set(i, stack);
                                 
-                                // Уменьшаем количество в таблице
                                 counter.remove(itemKey, patternStack.getCount());
                                 break;
                             }

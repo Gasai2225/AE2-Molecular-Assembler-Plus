@@ -23,7 +23,6 @@ public class CCBlocks {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, CCApplied.MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, CCApplied.MODID);
     
-    // Extreme Molecular Assembler
     public static final RegistryObject<Block> EXTREME_MOLECULAR_ASSEMBLER = BLOCKS.register(
         "extreme_molecular_assembler",
         () -> new ExtremeMolecularAssemblerBlock(Block.Properties.of()
@@ -45,7 +44,6 @@ public class CCBlocks {
             var type = BlockEntityType.Builder.of(supplier, EXTREME_MOLECULAR_ASSEMBLER.get()).build(null);
             typeHolder.set(type);
             
-            // Связываем блок с BlockEntityType, как это делается в AE2
             ((ExtremeMolecularAssemblerBlock) EXTREME_MOLECULAR_ASSEMBLER.get()).setBlockEntity(ExtremeMolecularAssemblerTileEntity.class, type, null, null);
             
             return type;

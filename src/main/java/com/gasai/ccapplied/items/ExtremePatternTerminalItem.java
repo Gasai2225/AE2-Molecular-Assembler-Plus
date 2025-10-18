@@ -25,7 +25,6 @@ public class ExtremePatternTerminalItem extends Item implements IPartItem<Extrem
 
     @Override
     public InteractionResult useOn(@Nonnull UseOnContext ctx) {
-        com.gasai.ccapplied.CCApplied.LOG.info("[ExtremeItem] useOn at {} face {} stack {}", ctx.getClickedPos(), ctx.getClickedFace(), ctx.getItemInHand().getItem());
         return PartHelper.usePartItem(ctx);
     }
 }

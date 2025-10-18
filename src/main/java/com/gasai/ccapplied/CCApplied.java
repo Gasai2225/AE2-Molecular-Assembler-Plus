@@ -19,7 +19,7 @@ public final class CCApplied {
     public static final Logger LOG = LogUtils.getLogger();
     
     /**
-     * Создает ResourceLocation для данного пути
+     * Creates ResourceLocation for given path
      */
     public static ResourceLocation makeId(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
@@ -35,10 +35,8 @@ public final class CCApplied {
         CCMenuTypes.MENUS.register(modBus);
         com.gasai.ccapplied.core.registry.CCCreativeTabs.CREATIVE_TABS.register(modBus);
 
-        // ВАЖНО: регистрируем единожды
         PatternDetailsHelper.registerDecoder(ExtremePatternDecoder.INSTANCE);
         
-        // Регистрируем модели частей AE2
         com.gasai.ccapplied.client.CCPartModelRegistry.registerPartModels();
     }
 }

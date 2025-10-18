@@ -6,7 +6,7 @@ import appeng.menu.slot.RestrictedInputSlot;
 import com.gasai.ccapplied.core.registry.CCItems;
 
 /**
- * Слот для бланков экстремальных паттернов
+ * Slot for extreme pattern blanks
  */
 public class ExtremeBlankPatternSlot extends RestrictedInputSlot {
     
@@ -16,7 +16,6 @@ public class ExtremeBlankPatternSlot extends RestrictedInputSlot {
 
     @Override
     public boolean mayPlace(ItemStack stack) {
-        // Принимаем только наши экстремальные бланки
         return !stack.isEmpty() && stack.getItem() == CCItems.EXTREME_BLANK_PATTERN.get();
     }
 }

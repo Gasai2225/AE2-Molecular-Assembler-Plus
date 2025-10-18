@@ -1,12 +1,10 @@
 package com.gasai.ccapplied.menus;
 
 import com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalMenuHost;
-import com.gasai.ccapplied.CCApplied;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.network.chat.Component;
 
 import appeng.api.inventories.InternalInventory;
 import appeng.menu.guisync.GuiSync;
@@ -24,8 +22,8 @@ import com.gasai.ccapplied.core.registry.CCItems;
 import java.util.List;
 
 /**
- * Меню терминала кодирования экстремальных паттернов (9×9).
- * Только режим "крафтинг": inputs[81] + output[1].
+ * Menu for extreme pattern encoding terminal (9×9).
+ * Only "crafting" mode: inputs[81] + output[1].
  */
 
 public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements appeng.helpers.IMenuCraftingPacket, appeng.util.inv.InternalInventoryHost {
@@ -47,7 +45,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     private final FakeSlot[] inputSlots = new FakeSlot[SLOTS];
     private final ExtremeCraftingTermSlot outputSlot;
     
-    // Реальная сетка крафта для хранения данных игрока
     private final appeng.util.inv.AppEngInternalInventory craftingMatrix;
 
     private final Slot blankPatternSlot;
@@ -57,16 +54,16 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     private final appeng.util.ConfigInventory encodedOutputsInv;
 
     @GuiSync(10)
-    public boolean uiActive = true; // пример синка для клиента (на свой экран)
+    public boolean uiActive = true;
 
     @GuiSync(11)
-    public boolean networkConnected = false; // статус сети
+    public boolean networkConnected = false;
 
     @GuiSync(12)
-    public int patternInputCount = 0; // количество входных слотов
+    public int patternInputCount = 0;
 
     @GuiSync(13)
-    public int patternOutputCount = 0; // количество выходных слотов
+    public int patternOutputCount = 0;
 
     public ExtremePatternEncodingTermMenu(int id, Inventory inv, IExtremePatternTerminalMenuHost host) {
         this(TYPE, id, inv, host, true);}
@@ -80,28 +77,24 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         this.encodedInputsInv  = logic.getEncodedInputInv();
         this.encodedOutputsInv = logic.getEncodedOutputInv();
         
-        // Создаем реальную сетку крафта для хранения данных игрока
         this.craftingMatrix = new appeng.util.inv.AppEngInternalInventory(this, SLOTS);
 
         var inputsWrapper  = encodedInputsInv.createMenuWrapper();
         var outputsWrapper = encodedOutputsInv.createMenuWrapper();
 
-        // 81 входной фейк-слот (9x9 сетка) - теперь ссылаются на реальную сетку крафта
         for (int i = 0; i < SLOTS; i++) {
             var fs = new FakeSlot(craftingMatrix, i);
             fs.setHideAmount(true);
-            // Располагаем слоты в правильном порядке для сетки 9x9
             this.inputSlots[i] = fs;
             this.addSlot(fs, SlotSemantics.CRAFTING_GRID);
         }
 
-        // 1 выходной слот с превью результата экстремального крафта
         var out = new ExtremeCraftingTermSlot(
             inv.player, 
             this.getActionSource(), 
             this.powerSource,
             host.getInventory(), 
-            craftingMatrix, // Используем реальную сетку крафта
+            craftingMatrix,
             this,
             outputsWrapper, 
             0
@@ -109,7 +102,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         this.addSlot(this.outputSlot = out, SlotSemantics.CRAFTING_RESULT);
         
 
-        // реальные слоты бланка/энкодед
         this.blankPatternSlot = this.addSlot(
                 new ExtremeBlankPatternSlot(logic.getBlankPatternInv(), 0),
                 SlotSemantics.BLANK_PATTERN
@@ -121,7 +113,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
 
         registerClientAction(ACTION_ENCODE, this::encode);
         registerClientAction(ACTION_CLEAR,  this::clearAll);
-        // Приём сетки из JEI (центровка n×m во внутреннюю 9×9)
         registerClientAction("jei_apply_grid", JeiGridData.class, data -> {
             if (isClientSide()) return;
             applyCenteredGridFromClient(data.width, data.height, data.items);
@@ -130,27 +121,24 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         registerClientAction("extremeClearPattern", this::extremeClearPattern);
         registerClientAction("extremeCraftingClearPattern", this::extremeCraftingClearPattern);
         
-        // Инициализируем поля @GuiSync
         this.uiActive = true;
         this.networkConnected = false;
         this.patternInputCount = 0;
         this.patternOutputCount = 0;
 
-        // При открытии меню загружаем сохранённое состояние фейк-слотов из логики в реальную матрицу
         if (!isClientSide()) {
             loadCraftingMatrixFromLogic();
         }
     }
 
-    /* -------------------- методы обновления -------------------- */
+    /* -------------------- update methods -------------------- */
     
     @Override
     public void setItem(int slotID, int stateId, ItemStack stack) {
         super.setItem(slotID, stateId, stack);
-        // Слот результата обновляется автоматически
     }
 
-    /* -------------------- действия -------------------- */
+    /* -------------------- actions -------------------- */
 
     public void encode() {
         if (isClientSide()) {
@@ -159,18 +147,15 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         }
 
 
-        // Получаем превью результата рецепта
         ItemStack recipeResult = getRecipePreview();
         
         if (recipeResult.isEmpty()) {
             return;
         }
         
-        // Заполняем логику кодирования данными из craftingMatrix
         var encodingLogic = ((com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalMenuHost) getHost()).getLogic();
         encodingLogic.fillFromCraftingMatrix(craftingMatrix, recipeResult);
         
-        // Кодируем паттерн используя существующую логику
         boolean success = encodingLogic.encodePattern();
         
         
@@ -182,13 +167,11 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
             return;
         }
         
-        // Очищаем все слоты
         for (int i = 0; i < SLOTS; i++) {
             inputSlots[i].set(ItemStack.EMPTY);
         }
         outputSlot.set(ItemStack.EMPTY);
         
-        // Очищаем логику кодирования
         var encodingLogic = ((com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalMenuHost) getHost()).getLogic();
         encodingLogic.clearCraftingGrid();
         
@@ -198,25 +181,20 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     public void broadcastChanges() {
         super.broadcastChanges();
         
-        // Синхронизируем GUI поля с клиентом
-        // broadcastFullUpdate() не существует, используем стандартный механизм
     }
 
-    /* -------------------- утилиты -------------------- */
+    /* -------------------- utilities -------------------- */
 
     private static boolean isOurBlank(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() == CCItems.EXTREME_BLANK_PATTERN.get();
     }
 
-    // Методы для поддержки виджетов
     public boolean canEncode() {
         
-        // Проверяем наличие бланка паттерна
         if (this.blankPatternSlot.getItem().isEmpty()) {
             return false;
         }
         
-        // Проверяем, есть ли предметы в сетке крафта
         boolean hasInputItems = false;
         int inputItemCount = 0;
         if (inputSlots != null) {
@@ -233,14 +211,13 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
             return false;
         }
         
-        // На сервере дополнительно проверяем валидность рецепта
         if (!isClientSide()) {
             ItemStack recipeResult = getRecipePreview();
             boolean hasValidRecipe = !recipeResult.isEmpty();
-            return hasValidRecipe; // Есть валидный рецепт
+            return hasValidRecipe;
         }
         
-        return true; // На клиенте достаточно наличия предметов
+        return true;
     }
 
     public boolean hasPattern() {
@@ -260,16 +237,15 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     }
     
     /**
-     * Получает и обновляет превью результата рецепта для текущей сетки.
-     * Аналогично getAndUpdateOutput() из PatternEncodingTermMenu.
+     * Gets and updates recipe result preview for current grid.
+     * Similar to getAndUpdateOutput() from PatternEncodingTermMenu.
      */
     public ItemStack getAndUpdateOutput() {
-        // Теперь результат вычисляется динамически в слоте
         return this.outputSlot.getDisplayedCraftingOutput();
     }
     
     /**
-     * Получает превью результата рецепта для текущей сетки
+     * Gets recipe result preview for current grid
      */
     public ItemStack getRecipePreview() {
         if (isClientSide()) {
@@ -281,8 +257,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         }
         
         try {
-            // Попробуем использовать данные из outputSlot (ExtremeCraftingTermSlot)
-            // который должен содержать актуальные данные сетки крафта
             if (outputSlot != null && outputSlot instanceof ExtremeCraftingTermSlot) {
                 ItemStack result = outputSlot.getItem();
                 if (!result.isEmpty()) {
@@ -290,7 +264,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
                 }
             }
             
-            // Fallback: читаем из inputSlots как раньше
             ItemStack[] craftingGrid = new ItemStack[SLOTS];
             int nonEmptySlots = 0;
             for (int i = 0; i < SLOTS; i++) {
@@ -313,12 +286,10 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
 
     @Override
     protected ItemStack transferStackToMenu(ItemStack input) {
-        // пополнить бланк
         if (blankPatternSlot.mayPlace(input)) {
             input = blankPatternSlot.safeInsert(input);
             if (input.isEmpty()) return ItemStack.EMPTY;
         }
-        // пополнить encoded
         if (encodedPatternSlot.mayPlace(input)) {
             input = encodedPatternSlot.safeInsert(input);
             if (input.isEmpty()) return ItemStack.EMPTY;
@@ -326,7 +297,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         return super.transferStackToMenu(input);
     }
 
-    /** Для «крафтинг-пакета» AE2: отдаём первые 81 слота как матрицу. */
     @Override public InternalInventory getCraftingMatrix() {
         return encodedInputsInv.createMenuWrapper().getSubInventory(0, SLOTS);
     }
@@ -339,9 +309,7 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     public FakeSlot[] getInputSlots() { return inputSlots; }
     public ExtremeCraftingTermSlot getOutputSlot() { return outputSlot; }
 
-    // Методы для виджетов
     public boolean canEncodePattern() {
-        // Проверяем наличие входных предметов и валидного рецепта
         boolean hasInputs = false;
         for (int i = 0; i < SLOTS; i++) {
             if (encodedInputsInv.getStack(i) != null) {
@@ -352,12 +320,11 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         
         if (!hasInputs) return false;
         
-        // Проверяем, есть ли валидный рецепт для текущей сетки
         if (isClientSide()) {
-            return true; // На клиенте просто проверяем входы
+            return true;
         }
         
-        return !getRecipePreview().isEmpty(); // На сервере проверяем валидность рецепта
+        return !getRecipePreview().isEmpty();
     }
 
     public boolean hasItemsInGrid() {
@@ -384,9 +351,7 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
 
     @Override
     public void onSlotChange(Slot slot) {
-        // Если изменился слот в сетке крафта, обновляем результат
         if (slot instanceof FakeSlot && isInputSlot(slot)) {
-            // Синхронизируем изменение с персистентной логикой (encodedInputsInv)
             if (!isClientSide()) {
                 int slotIndex = slot.getContainerSlot();
                 if (slotIndex >= 0 && slotIndex < SLOTS) {
@@ -405,22 +370,19 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
             }
         }
         
-        // Если изменился слот для закодированных паттернов
         if (slot == encodedPatternSlot && !isClientSide()) {
             var patternStack = slot.getItem();
             if (!patternStack.isEmpty()) {
-                // Загружаем рецепт из паттерна в сетку крафта
                 var encodingLogic = ((com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalMenuHost) getHost()).getLogic();
                 encodingLogic.loadPatternIntoMatrix(craftingMatrix, patternStack);
             } else {
-                // Если слот пустой (паттерн извлечен), очищаем сетку
                 clearAll();
             }
         }
     }
     
     /**
-     * Проверяет, является ли слот входным слотом сетки крафта
+     * Checks if slot is input slot of crafting grid
      */
     private boolean isInputSlot(Slot slot) {
         for (FakeSlot inputSlot : this.inputSlots) {
@@ -431,7 +393,7 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         return false;
     }
 
-    /** Данные для JEI переноса (Gson-friendly DTO) */
+    /** Data for JEI transfer (Gson-friendly DTO) */
     public static class JeiGridData {
         public final int width;
         public final int height;
@@ -444,38 +406,33 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         }
     }
 
-    /** Один предмет для JEI переноса */
+    /** One item for JEI transfer */
     public static class JeiItem {
-        public final String snbt; // полная SNBT ItemStack (с id/Count/nbt)
+        public final String snbt;
 
         public JeiItem(String snbt) {
             this.snbt = snbt;
         }
     }
 
-    /** Применяет плоский список размера w*h, центрируя в нашей 9x9 матрице. */
     private void applyCenteredGridFromClient(int w, int h, java.util.List<JeiItem> items) {
         if (isClientSide()) return;
         if (w <= 0 || h <= 0) return;
         final boolean isShapeless = w == 1;
-        // Для shaped ограничиваемся 9×9, для shapeless разрешаем любую высоту (обрежем до 81)
         if (!isShapeless && (w > GRID || h > GRID)) return;
 
-        // Очистка матрицы (QoL: всегда сбрасываем старый рецепт перед записью нового)
         try {
             for (int i = 0; i < SLOTS; i++) {
                 craftingMatrix.extractItem(i, Integer.MAX_VALUE, false);
                 craftingMatrix.insertItem(i, ItemStack.EMPTY, false);
                 encodedInputsInv.setStack(i, null);
             }
-            // Сохраняем очистку немедленно, чтобы клиент увидел пустую сетку до заполнения
             logic.getEncodedInputInv().beginBatch();
             for (int i = 0; i < SLOTS; i++) logic.getEncodedInputInv().setStack(i, null);
             logic.getEncodedInputInv().endBatch();
         } catch (Exception e) {
         }
 
-        // Декодируем все стаки заранее
         java.util.List<ItemStack> decoded = new java.util.ArrayList<>(items.size());
         for (var ji : items) {
             ItemStack st = ItemStack.EMPTY;
@@ -489,7 +446,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         }
 
         if (isShapeless) {
-            // Shapeless: заполняем по порядку с первого слота (0,0), слева-направо, сверху-вниз
             int limit = Math.min(decoded.size(), SLOTS);
             for (int i = 0; i < limit; i++) {
                 ItemStack st = decoded.get(i);
@@ -504,7 +460,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
                 }
             }
         } else {
-            // Shaped: центрируем w×h во внутреннюю 9×9
             int startX = (GRID - w) / 2;
             int startY = (GRID - h) / 2;
             int idx = 0;
@@ -526,25 +481,21 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
             }
         }
 
-        // Обновим превью и сохраним логику
         var encodingLogic = ((com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalMenuHost) getHost()).getLogic();
         encodingLogic.fixExtremeCraftingGrid();
     }
 
-    /** Публичный мост для клиентских интеграций (JEI) */
     public void requestApplyJeiGrid(int w, int h, java.util.List<ItemStack> items) {
-        // Конвертируем ItemStack в полную SNBT-представление
         var list = new java.util.ArrayList<JeiItem>(items.size());
         for (var st : items) {
             if (st == null || st.isEmpty()) { list.add(new JeiItem("{}")); continue; }
             var tag = new net.minecraft.nbt.CompoundTag();
-            st.save(tag); // включает id, Count и весь nbt
+            st.save(tag);
             list.add(new JeiItem(tag.toString()));
         }
         sendClientAction("jei_apply_grid", new JeiGridData(w, h, list));
     }
 
-    /** Загружает сохранённые в логике (NBT) инпуты в реальную матрицу фейк-слотов. */
     private void loadCraftingMatrixFromLogic() {
         try {
             for (int i = 0; i < SLOTS; i++) {
@@ -563,10 +514,9 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     }
     
 
-    // Реализация методов из IMenuCraftingPacket
     @Override
     public List<ItemStack> getViewCells() {
-        return List.of(); // Для экстремального терминала view cells не используются
+        return List.of();
     }
 
     @Override
@@ -577,7 +527,6 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         return null;
     }
 
-    // Методы для обработки действий виджетов
     public void extremeEncodePattern() {
         if (isClientSide()) {
             sendClientAction("extremeEncodePattern");
@@ -602,20 +551,15 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
         clearAll();
     }
     
-    // Реализация InternalInventoryHost
     @Override
     public void onChangeInventory(appeng.api.inventories.InternalInventory inv, int slot) {
-        // Обновляем превью при изменении сетки крафта
         if (inv == craftingMatrix) {
-            // Можно добавить логику для обновления превью
         }
     }
     
     @Override
     public void saveChanges() {
-        // Сохраняем изменения в сетке крафта
         if (craftingMatrix != null) {
-            // Логика сохранения может быть добавлена здесь
         }
     }
 

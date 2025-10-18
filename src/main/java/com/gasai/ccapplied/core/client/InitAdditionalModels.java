@@ -6,9 +6,6 @@ import net.minecraftforge.client.event.ModelEvent;
 
 import com.gasai.ccapplied.client.render.ExtremeMolecularAssemblerRenderer;
 
-/**
- * Регистрирует дополнительные JSON модели с Minecraft
- */
 @OnlyIn(Dist.CLIENT)
 public class InitAdditionalModels {
 

@@ -22,7 +22,6 @@ public final class CCItems {
             () -> new ExtremeEncodedPatternItem(new Item.Properties().stacksTo(1))
     );
 
-    // AE2 Part item — ставится на кабели
     public static final RegistryObject<Item> EXTREME_PATTERN_TERMINAL = ITEMS.register(
         "extreme_pattern_terminal",
         () -> new appeng.items.parts.PartItem<>(

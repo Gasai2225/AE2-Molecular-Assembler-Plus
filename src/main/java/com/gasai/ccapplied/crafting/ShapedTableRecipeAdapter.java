@@ -6,9 +6,6 @@ import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.Optional;
 
-/**
- * Адаптер для ShapedTableRecipe из ExtendedCrafting
- */
 public class ShapedTableRecipeAdapter implements ITableRecipeAdapter {
     
     private final ShapedTableRecipe recipe;
@@ -46,17 +43,11 @@ public class ShapedTableRecipeAdapter implements ITableRecipeAdapter {
     public int tier() {
         return tier;
     }
-    
-    /**
-     * Получает ширину рецепта
-     */
+
     public int width() {
         return width;
     }
-    
-    /**
-     * Получает высоту рецепта
-     */
+
     public int height() {
         return height;
     }

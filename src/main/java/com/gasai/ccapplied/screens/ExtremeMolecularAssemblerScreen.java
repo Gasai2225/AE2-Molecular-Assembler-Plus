@@ -9,9 +9,6 @@ import appeng.client.gui.widgets.ProgressBar.Direction;
 import appeng.client.gui.implementations.UpgradeableScreen;
 import com.gasai.ccapplied.menus.ExtremeMolecularAssemblerMenu;
 
-/**
- * Экран для Extreme Molecular Assembler
- */
 public class ExtremeMolecularAssemblerScreen extends UpgradeableScreen<ExtremeMolecularAssemblerMenu> {
 
     private final ProgressBar pb;

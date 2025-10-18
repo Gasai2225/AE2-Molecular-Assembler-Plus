@@ -2,11 +2,7 @@ package com.gasai.ccapplied.core.client;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
-import com.gasai.ccapplied.CCApplied;
-import com.gasai.ccapplied.screens.ExtremeMolecularAssemblerScreen;
-import com.gasai.ccapplied.menus.ExtremeMolecularAssemblerMenu;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,12 +12,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 
-import appeng.client.gui.AEBaseScreen;
 import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.style.StyleManager;
 
 /**
- * Система регистрации экранов CCApplied, совместимая с AE2
+ * CCApplied screen registration system, compatible with AE2
  */
 public final class CCAppliedInitScreens {
     
@@ -30,7 +25,7 @@ public final class CCAppliedInitScreens {
     private CCAppliedInitScreens() {}
     
     /**
-     * Регистрирует экран для указанного типа меню
+     * Registers screen for specified menu type
      */
     public static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(
             MenuType<M> type,
@@ -39,7 +34,6 @@ public final class CCAppliedInitScreens {
         
         SCREEN_FACTORIES.put(type, factory);
         
-        // Регистрируем экран через стандартную систему Minecraft
         MenuScreens.<M, U>register(type, (menu, playerInv, title) -> {
             
             try {
@@ -61,7 +55,7 @@ public final class CCAppliedInitScreens {
     }
     
     /**
-     * Фабрика экранов для CCApplied
+     * Screen factory for CCApplied
      */
     @FunctionalInterface
     public interface ScreenFactory<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> {

@@ -60,7 +60,6 @@ public class ECJeiRecipeTransferHandler implements IRecipeTransferHandler<Extrem
                     }
                 }
             } else {
-                // shapeless (EC): используем ингредиенты рецепта, что реально участвуют в крафте
                 var ings = recipe.getIngredients();
                 inputs = new ArrayList<>(ings.size());
                 for (var ing : ings) {
@@ -72,7 +71,6 @@ public class ECJeiRecipeTransferHandler implements IRecipeTransferHandler<Extrem
                 h = inputs.size();
             }
         } catch (Throwable t) {
-            // fallback: пусто
             w = 1;
             h = 0;
         }

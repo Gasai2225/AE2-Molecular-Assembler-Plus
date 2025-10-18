@@ -25,7 +25,7 @@ import appeng.client.render.crafting.AssemblerAnimationStatus;
 import com.gasai.ccapplied.CCApplied;
 
 /**
- * Рендерер для Extreme Molecular Assembler
+ * Renderer for Extreme Molecular Assembler
  */
 @OnlyIn(Dist.CLIENT)
 public class ExtremeMolecularAssemblerRenderer implements BlockEntityRenderer<ExtremeMolecularAssemblerTileEntity> {
@@ -35,7 +35,6 @@ public class ExtremeMolecularAssemblerRenderer implements BlockEntityRenderer<Ex
     private final RandomSource particleRandom = RandomSource.create();
     
     public ExtremeMolecularAssemblerRenderer(BlockEntityRendererProvider.Context context) {
-        // Инициализация рендерера
     }
     
     @Override
@@ -65,12 +64,11 @@ public class ExtremeMolecularAssemblerRenderer implements BlockEntityRenderer<Ex
             int combinedOverlayIn) {
         Minecraft minecraft = Minecraft.getInstance();
         BakedModel lightsModel = minecraft.getModelManager().getModel(LIGHTS_MODEL);
-        // tripwire layer имеет нужные нам свойства шейдера:
+        // tripwire layer has the shader properties we need:
         // alpha testing
         // translucency
         VertexConsumer buffer = bufferIn.getBuffer(RenderType.tripwire());
         
-        // certainly doesn't use alpha testing, making it look like it will not work.
         minecraft.getBlockRenderer().getModelRenderer().renderModel(ms.last(), buffer, null,
                 lightsModel, 1, 1, 1, combinedLightIn, combinedOverlayIn, ModelData.EMPTY, null);
     }
@@ -81,21 +79,17 @@ public class ExtremeMolecularAssemblerRenderer implements BlockEntityRenderer<Ex
         double centerY = blockEntity.getBlockPos().getY() + 0.5f;
         double centerZ = blockEntity.getBlockPos().getZ() + 0.5f;
         
-        // Spawn crafting FX that fly towards the block's center
         Minecraft minecraft = Minecraft.getInstance();
         if (status.getTicksUntilParticles() <= 0) {
             status.setTicksUntilParticles(4);
             
-            // Пока не добавляем частицы, так как у нас нет ParticleTypes.CRAFTING
-            // Можно добавить позже если нужно
         }
         
         ItemStack is = status.getIs();
         if (!is.isEmpty()) {
-            System.out.println("[CCApplied] ExtremeMolecularAssemblerRenderer: Rendering item " + is.getDisplayName().getString() + " at " + blockEntity.getBlockPos());
             ItemRenderer itemRenderer = minecraft.getItemRenderer();
             ms.pushPose();
-            ms.translate(0.5, 0.5, 0.5); // Translate to center of block
+            ms.translate(0.5, 0.5, 0.5);
             
             if (!(is.getItem() instanceof BlockItem)) {
                 ms.translate(0, -0.3f, 0);
@@ -106,8 +100,6 @@ public class ExtremeMolecularAssemblerRenderer implements BlockEntityRenderer<Ex
             itemRenderer.renderStatic(is, ItemDisplayContext.GROUND, combinedLightIn,
                     OverlayTexture.NO_OVERLAY, ms, bufferIn, blockEntity.getLevel(), 0);
             ms.popPose();
-        } else {
-            System.out.println("[CCApplied] ExtremeMolecularAssemblerRenderer: No item to render at " + blockEntity.getBlockPos());
         }
     }
 }

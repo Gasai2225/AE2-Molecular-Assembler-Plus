@@ -9,7 +9,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -18,10 +17,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.block.AEBaseEntityBlock;
 import com.gasai.ccapplied.tiles.ExtremeMolecularAssemblerTileEntity;
-import com.gasai.ccapplied.core.registry.CCBlocks;
 import com.gasai.ccapplied.core.registry.CCMenuTypes;
 import appeng.menu.MenuOpener;
-import com.gasai.ccapplied.menus.ExtremeMolecularAssemblerMenu;
 import appeng.menu.locator.MenuLocators;
 import appeng.util.InteractionUtil;
 

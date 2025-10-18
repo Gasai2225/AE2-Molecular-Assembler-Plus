@@ -10,9 +10,6 @@ import appeng.api.crafting.IPatternDetails;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.KeyCounter;
 
-/**
- * Интерфейс для паттернов, поддерживающих сборку в Extreme Molecular Assembler
- */
 public interface IMolecularAssemblerSupportedPattern extends IPatternDetails {
     ItemStack assemble(Container container, Level level);
 

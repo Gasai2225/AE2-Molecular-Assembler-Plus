@@ -2,26 +2,22 @@ package com.gasai.ccapplied.crafting;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-// ExtendedCrafting imports
 import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import com.blakebr0.extendedcrafting.crafting.recipe.ShapedTableRecipe;
 import com.blakebr0.extendedcrafting.crafting.recipe.ShapelessTableRecipe;
 
-import java.util.List;
-
 /**
- * Хелпер для работы с рецептами ExtendedCrafting
+ * Helper for working with ExtendedCrafting recipes
  */
 public class ExtendedCraftingRecipeHelper {
     
     private ExtendedCraftingRecipeHelper() {}
     
     /**
-     * Проверяет, есть ли валидный рецепт ExtendedCrafting для заданной сетки крафта 9x9
+     * Checks if there is a valid ExtendedCrafting recipe for the given 9x9 crafting grid
      */
     public static @Nullable ITableRecipe findRecipe(ItemStack[] craftingGrid, Level level) {
         if (level == null || craftingGrid == null || craftingGrid.length != 81) {
@@ -29,7 +25,6 @@ public class ExtendedCraftingRecipeHelper {
         }
         
         try {
-            // Проверяем, есть ли предметы в сетке
             boolean hasItems = false;
             for (ItemStack stack : craftingGrid) {
                 if (!stack.isEmpty()) {
@@ -42,22 +37,16 @@ public class ExtendedCraftingRecipeHelper {
                 return null;
             }
             
-            // Получаем менеджер рецептов
             var recipeManager = level.getRecipeManager();
             if (recipeManager == null) {
                 return null;
             }
             
-            // Ищем ExtendedCrafting рецепты через специальные категории
             try {
-                // Получаем все рецепты из менеджера
                 var allRecipes = recipeManager.getRecipes();
                 
-                // Ищем рецепты
                 for (var recipe : allRecipes) {
-                    // Проверяем, является ли рецепт ITableRecipe
                     if (recipe instanceof ITableRecipe tableRecipe) {
-                        // Проверяем, подходит ли этот рецепт для нашей сетки
                         if (matchesExtendedCraftingRecipe(tableRecipe, craftingGrid, level)) {
                             return tableRecipe;
                         }
@@ -67,12 +56,10 @@ public class ExtendedCraftingRecipeHelper {
                 return null;
                 
             } catch (Exception e) {
-                com.gasai.ccapplied.CCApplied.LOG.warn("Error searching ExtendedCrafting recipes", e);
                 return null;
             }
             
         } catch (Exception e) {
-            com.gasai.ccapplied.CCApplied.LOG.warn("Error checking ExtendedCrafting recipes", e);
             return null;
         }
     }
@@ -99,27 +86,24 @@ public class ExtendedCraftingRecipeHelper {
      */
     private static boolean matchesShapedTableRecipe(ShapedTableRecipe recipe, ItemStack[] craftingGrid, Level level) {
         try {
-            // Проверяем размеры рецепта
             int width = recipe.getWidth();
             int height = recipe.getHeight();
             
             if (width > 9 || height > 9) {
-                return false; // Слишком большой рецепт
+                return false;
             }
             
-            // Получаем ингредиенты рецепта
             var ingredients = recipe.getIngredients();
             
-            // Ищем рецепт во всех возможных позициях в сетке 9x9
             for (int startY = 0; startY <= 9 - height; startY++) {
                 for (int startX = 0; startX <= 9 - width; startX++) {
                     if (matchesRecipeAtPosition(recipe, ingredients, craftingGrid, startX, startY, width, height)) {
-                        return true; // Найден рецепт в этой позиции
+                        return true;
                     }
                 }
             }
             
-            return false; // Рецепт не найден ни в одной позиции
+            return false;
             
         } catch (Exception e) {
             com.gasai.ccapplied.CCApplied.LOG.warn("Error matching ShapedTableRecipe", e);
@@ -135,23 +119,20 @@ public class ExtendedCraftingRecipeHelper {
                                                   ItemStack[] craftingGrid, 
                                                   int startX, int startY, int width, int height) {
         try {
-            // Проверяем соответствие ингредиентов в области рецепта
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     int recipeIndex = x + y * width;
-                    int gridIndex = (startX + x) + (startY + y) * 9; // 9x9 сетка
+                    int gridIndex = (startX + x) + (startY + y) * 9;
                     
                     if (recipeIndex < ingredients.size() && gridIndex < craftingGrid.length) {
                         var ingredient = ingredients.get(recipeIndex);
                         var gridStack = craftingGrid[gridIndex];
                         
-                        // Если ингредиент не пустой, проверяем соответствие
                         if (!ingredient.isEmpty()) {
                             if (gridStack.isEmpty() || !ingredient.test(gridStack)) {
-                                return false; // Не соответствует
+                                return false;
                             }
                         } else {
-                            // Если ингредиент пустой, в сетке тоже должно быть пусто
                             if (!gridStack.isEmpty()) {
                                 return false;
                             }
@@ -160,16 +141,13 @@ public class ExtendedCraftingRecipeHelper {
                 }
             }
             
-            // Проверяем, что ВНЕ области рецепта нет лишних предметов
-            // Но только для позиций, которые не заняты рецептом
             for (int y = 0; y < 9; y++) {
                 for (int x = 0; x < 9; x++) {
                     int gridIndex = x + y * 9;
                     
-                    // Если позиция ВНЕ области рецепта (учитываем startX и startY)
                     if (x < startX || x >= startX + width || y < startY || y >= startY + height) {
                         if (!craftingGrid[gridIndex].isEmpty()) {
-                            return false; // Есть лишний предмет
+                            return false;
                         }
                     }
                 }
@@ -188,10 +166,8 @@ public class ExtendedCraftingRecipeHelper {
      */
     private static boolean matchesShapelessTableRecipe(ShapelessTableRecipe recipe, ItemStack[] craftingGrid, Level level) {
         try {
-            // Получаем ингредиенты рецепта
             var ingredients = recipe.getIngredients();
             
-            // Создаем копию сетки для проверки (чтобы не изменять оригинал)
             var availableItems = new java.util.ArrayList<ItemStack>();
             for (ItemStack stack : craftingGrid) {
                 if (!stack.isEmpty()) {
@@ -199,18 +175,15 @@ public class ExtendedCraftingRecipeHelper {
                 }
             }
             
-            // Проверяем каждый ингредиент рецепта
             for (var ingredient : ingredients) {
                 if (ingredient.isEmpty()) {
-                    continue; // Пропускаем пустые ингредиенты
+                    continue;
                 }
                 
                 boolean found = false;
-                // Ищем подходящий предмет в доступных
                 for (int i = 0; i < availableItems.size(); i++) {
                     var item = availableItems.get(i);
                     if (ingredient.test(item)) {
-                        // Найден подходящий предмет, убираем его из доступных
                         availableItems.remove(i);
                         found = true;
                         break;
@@ -218,14 +191,12 @@ public class ExtendedCraftingRecipeHelper {
                 }
                 
                 if (!found) {
-                    return false; // Не найден подходящий ингредиент
+                    return false;
                 }
             }
             
-            // ВАЖНО: Проверяем, что не осталось лишних предметов
-            // Если все ингредиенты найдены, но остались предметы - рецепт не подходит
             if (!availableItems.isEmpty()) {
-                return false; // Есть лишние предметы
+                return false;
             }
             
             return true;
@@ -241,8 +212,6 @@ public class ExtendedCraftingRecipeHelper {
      * Проверяет, является ли рецепт ExtendedCrafting рецептом
      */
     public static boolean isExtendedCraftingRecipe(CraftingRecipe recipe) {
-        // Пока возвращаем false, так как ITableRecipe не наследуется от CraftingRecipe
-        // TODO: В будущем добавить правильную проверку
         return false;
     }
     
@@ -253,7 +222,6 @@ public class ExtendedCraftingRecipeHelper {
         ITableRecipe recipe = findRecipe(craftingGrid, level);
         if (recipe != null) {
             try {
-                // Для ExtendedCrafting рецептов получаем результат через getResultItem
                 return recipe.getResultItem(level.registryAccess());
             } catch (Exception e) {
                 com.gasai.ccapplied.CCApplied.LOG.warn("Error getting recipe preview", e);

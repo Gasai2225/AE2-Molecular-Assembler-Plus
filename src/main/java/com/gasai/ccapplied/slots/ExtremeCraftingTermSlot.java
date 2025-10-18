@@ -8,11 +8,10 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.storage.MEStorage;
 import appeng.helpers.IMenuCraftingPacket;
 import appeng.menu.slot.FakeSlot;
-import com.gasai.ccapplied.CCApplied;
 
 /**
- * Слот для отображения результата экстремального крафта (9x9).
- * Аналогичен CraftingTermSlot из AE2, но адаптирован для ExtendedCrafting.
+ * Slot for displaying extreme crafting result (9x9).
+ * Similar to CraftingTermSlot from AE2, but adapted for ExtendedCrafting.
  */
 public class ExtremeCraftingTermSlot extends FakeSlot {
     
@@ -28,27 +27,19 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
         this.craftingMatrix = craftingMatrix;
         this.setHideAmount(false);
         
-        // Логируем для отладки
-        CCApplied.LOG.debug("[ExtremeCraftingSlot] Created slot with player={}, matrix={}", 
-            player != null ? player.getName().getString() : "null",
-            craftingMatrix != null ? "valid" : "null");
     }
     
     @Override
     public boolean mayPlace(ItemStack stack) {
-        // Блокируем ручной ввод - игрок не может сам положить предмет
         return false;
     }
     
     @Override
     public ItemStack getItem() {
-        // Вычисляем результат крафта каждый раз (без кэширования)
         ItemStack result = getCraftingResult();
         
-        // Гарантируем, что результат не null
         ItemStack finalResult = result != null ? result : ItemStack.EMPTY;
         
-        // ВАЖНО: Сохраняем результат в базовом слоте для синхронизации с клиентом
         super.set(finalResult);
         
         return finalResult;
@@ -56,8 +47,6 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
     
     @Override
     public void set(ItemStack stack) {
-        // Игнорируем попытки установить предмет вручную
-        // Слот обновляется автоматически через getItem()
     }
     
     @Override
@@ -71,19 +60,16 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
     }
     
     /**
-     * Вычисляет результат крафта на основе текущей матрицы.
+     * Computes crafting result based on current matrix.
      */
     private ItemStack getCraftingResult() {
         try {
-            // Проверяем, что игрок и мир доступны
             if (player == null || player.level() == null || craftingMatrix == null) {
                 return ItemStack.EMPTY;
             }
             
-            // Создаем массив для 9x9 сетки
-            ItemStack[] craftingGrid = new ItemStack[81]; // 9x9 = 81 слот
+            ItemStack[] craftingGrid = new ItemStack[81];
             
-            // Заполняем массив из crafting matrix
             int nonEmptySlots = 0;
             for (int i = 0; i < Math.min(craftingGrid.length, craftingMatrix.size()); i++) {
                 ItemStack stack = craftingMatrix.getStackInSlot(i);
@@ -93,48 +79,40 @@ public class ExtremeCraftingTermSlot extends FakeSlot {
                 }
             }
             
-            // Получаем превью рецепта из ExtendedCrafting
             ItemStack result = com.gasai.ccapplied.crafting.ExtendedCraftingRecipeHelper.getRecipePreview(
                 craftingGrid, player.level());
             
-            // Гарантируем, что результат не null
             ItemStack finalResult = result != null ? result : ItemStack.EMPTY;
             return finalResult;
                 
         } catch (Exception e) {
-            CCApplied.LOG.warn("Error computing crafting result", e);
             return ItemStack.EMPTY;
         }
     }
     
     /**
-     * Устанавливает отображаемый результат (для совместимости).
+     * Sets displayed result (for compatibility).
      */
     public void setDisplayedCraftingOutput(ItemStack output) {
-        // В этой реализации мы не храним результат, а вычисляем его динамически
-        // Этот метод оставлен для совместимости
     }
     
     /**
-     * Получает отображаемый результат.
+     * Gets displayed result.
      */
     public ItemStack getDisplayedCraftingOutput() {
         return getCraftingResult();
     }
     
     /**
-     * Очищает отображаемый результат.
+     * Clears displayed result.
      */
     public void clearDisplayedOutput() {
-        // В этой реализации мы не храним результат, а вычисляем его динамически
-        // Этот метод оставлен для совместимости
     }
     
     /**
-     * Инициализация слота (для совместимости с PatternTermSlot).
+     * Slot initialization (for compatibility with PatternTermSlot).
      */
     public void initialize(ItemStack stack) {
-        // Игнорируем инициализацию от сервера, результат вычисляется на клиенте
     }
     
     

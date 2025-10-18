@@ -20,7 +20,7 @@ import appeng.client.Point;
 import appeng.menu.slot.IOptionalSlot;
 
 /**
- * Меню для Extreme Molecular Assembler - поддерживает 9x9 рецепты
+ * Menu for Extreme Molecular Assembler - supports 9x9 recipes
  */
 public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecularAssemblerTileEntity>
         implements IProgressProvider {
@@ -54,7 +54,6 @@ public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecu
     protected void setupConfig() {
         var mac = this.getHost().getSubInventory(ExtremeMolecularAssemblerTileEntity.INV_MAIN);
 
-        // Создаем слоты для сетки 9x9 (81 слот)
         for (int i = 0; i < 81; i++) {
             this.addSlot(new ExtremeMolecularAssemblerPatternSlot(this, mac, i), SlotSemantics.MACHINE_CRAFTING_GRID);
         }
@@ -86,7 +85,6 @@ public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecu
     @Override
     public void onSlotChange(Slot s) {
 
-        // If the pattern changes, the crafting grid slots have to be revalidated
         if (s == encodedPatternSlot) {
             for (Slot otherSlot : slots) {
                 if (otherSlot != s && otherSlot instanceof AppEngSlot) {
@@ -98,7 +96,7 @@ public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecu
     }
 
     /**
-     * Слот для паттерна в Extreme Molecular Assembler
+     * Slot for pattern in Extreme Molecular Assembler
      */
     public static class ExtremeMolecularAssemblerPatternSlot extends AppEngSlot implements IOptionalSlot {
 
@@ -123,13 +121,12 @@ public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecu
 
         @Override
         public boolean isRenderDisabled() {
-            return true; // The background image does not include a slot background
+            return true;
         }
 
         @Override
         public boolean isSlotEnabled() {
             int slotIndex = getSlotIndex();
-            // Always enabled when there's an item in the inventory (otherwise you can't take it out...)
             if (!getInventory().getStackInSlot(slotIndex).isEmpty()) {
                 return true;
             }

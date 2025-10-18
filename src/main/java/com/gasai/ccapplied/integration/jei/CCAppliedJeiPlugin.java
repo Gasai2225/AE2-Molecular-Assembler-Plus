@@ -1,8 +1,6 @@
 package com.gasai.ccapplied.integration.jei;
 
 import com.gasai.ccapplied.CCApplied;
-import com.gasai.ccapplied.screens.ExtremePatternEncodingTermScreen;
-import com.gasai.ccapplied.menus.ExtremePatternEncodingTermMenu;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -13,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 @JeiPlugin
 public class CCAppliedJeiPlugin implements IModPlugin {
 
-    private static final ResourceLocation UID = new ResourceLocation(CCApplied.MODID, "jei_plugin");
+    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(CCApplied.MODID, "jei_plugin");
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -22,7 +20,6 @@ public class CCAppliedJeiPlugin implements IModPlugin {
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        // на первом этапе без кликабельных зон; не требуется для transfer
     }
 
     @Override

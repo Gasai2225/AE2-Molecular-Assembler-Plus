@@ -38,7 +38,6 @@ import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.KeyCounter;
-import appeng.api.stacks.GenericStack;
 import appeng.api.upgrades.IUpgradeInventory;
 import appeng.api.upgrades.IUpgradeableObject;
 import appeng.api.upgrades.UpgradeInventories;
@@ -46,7 +45,6 @@ import appeng.api.util.AECableType;
 import appeng.blockentity.grid.AENetworkInvBlockEntity;
 import appeng.capabilities.Capabilities;
 import appeng.client.render.crafting.AssemblerAnimationStatus;
-import appeng.core.AELog;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 import appeng.core.localization.GuiText;
@@ -66,7 +64,7 @@ import com.gasai.ccapplied.patterns.IMolecularAssemblerSupportedPattern;
 import com.gasai.ccapplied.patterns.ExtremeCraftingPattern;
 
 /**
- * TileEntity для Extreme Molecular Assembler - поддерживает 9x9 рецепты
+ * TileEntity for Extreme Molecular Assembler - supports 9x9 recipes
  */
 public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
         implements IUpgradeableObject, IGridTickable, ICraftingMachine, IPowerChannelState {
@@ -102,7 +100,7 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
                 .addService(IGridTickable.class, this);
         this.upgrades = UpgradeInventories.forMachine(AEBlocks.MOLECULAR_ASSEMBLER, getUpgradeSlots(),
                 this::saveChanges);
-        this.craftingInv = new TransientCraftingContainer(new AutoCraftingMenu(), 9, 9); // 9x9 для экстремального крафта
+        this.craftingInv = new TransientCraftingContainer(new AutoCraftingMenu(), 9, 9); // 9x9 for extreme crafting
 
     }
 
@@ -143,7 +141,6 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
 
             // Only accept our own extreme crafting patterns!
             if (isEmpty && patternDetails instanceof IMolecularAssemblerSupportedPattern pattern) {
-                // Проверяем, что у нас есть все необходимые предметы
                 if (canCraftPattern(pattern, table)) {
                     this.forcePlan = true;
                     this.myPlan = pattern;
@@ -161,28 +158,19 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
     }
     
     private boolean canCraftPattern(IMolecularAssemblerSupportedPattern pattern, KeyCounter[] table) {
-        // Проверяем, что в таблице есть все необходимые предметы для паттерна
         if (pattern instanceof ExtremeCraftingPattern extremePattern) {
-            // Простая проверка - если паттерн может быть собран, то принимаем его
-            // Более детальная проверка будет в hasMats()
             return true;
         }
         return true;
     }
 
     private void fillGrid(KeyCounter[] table, IMolecularAssemblerSupportedPattern adapter) {
-        // Заполняем сетку 9x9 из паттерна
         adapter.fillCraftingGrid(table, this.gridInv::setItemDirect);
 
-        // Для экстремальных паттернов не проверяем, что все предметы поместились
-        // так как у нас может быть больше слотов, чем нужно для рецепта
-        // Просто очищаем оставшиеся предметы
         for (var list : table) {
             list.removeZeros();
             if (!list.isEmpty()) {
-                // Логируем, но не выбрасываем исключение
-                CCApplied.LOG.warn("Could not fill all items in extreme crafting grid, remaining: {}", list.iterator().next());
-                list.clear(); // Очищаем оставшиеся предметы
+                list.clear();
             }
         }
     }
@@ -210,13 +198,11 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
             return false;
         }
 
-        // Проверяем, что в сетке крафта есть все необходимые предметы
         boolean hasAllItems = true;
         for (int x = 0; x < this.craftingInv.getContainerSize(); x++) {
             ItemStack stack = this.gridInv.getStackInSlot(x);
             AEItemKey key = stack.isEmpty() ? null : AEItemKey.of(stack);
             
-            // Проверяем, валиден ли предмет для этого слота
             if (!this.myPlan.isItemValid(x, key, this.getLevel())) {
                 hasAllItems = false;
                 break;
@@ -227,7 +213,6 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
             return false;
         }
 
-        // Заполняем временную сетку крафта
         for (int x = 0; x < this.craftingInv.getContainerSize(); x++) {
             this.craftingInv.setItem(x, this.gridInv.getStackInSlot(x));
         }
@@ -275,7 +260,6 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
     public void loadTag(CompoundTag data) {
         super.loadTag(data);
 
-        // Reset current state back to defaults
         this.forcePlan = false;
         this.myPattern = ItemStack.EMPTY;
         this.myPlan = null;
@@ -308,12 +292,9 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
                     }
                 }
 
-                // Reset myPattern, so it will accept another job once this one finishes
                 this.myPattern = ItemStack.EMPTY;
 
-                // If the plan is still null, reset back to non-forced mode
                 if (myPlan == null) {
-                    AELog.warn("Unable to restore auto-crafting pattern after load: %s", myPattern.getTag());
                     this.forcePlan = false;
                 }
             }
@@ -457,7 +438,6 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
             if (!output.isEmpty()) {
                 CraftingEvent.fireAutoCraftingEvent(getLevel(), (IPatternDetails) this.myPlan, output, this.craftingInv);
 
-                // pushOut might reset the plan back to null, so get the remaining items before
                 var craftingRemainders = this.myPlan.getRemainingItems(this.craftingInv);
 
                 this.pushOut(output.copy());
@@ -641,7 +621,7 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkInvBlockEntity
 
         @Override
         public boolean allowExtract(InternalInventory inv, int slot, int amount) {
-            return slot == 81; // output slot
+            return slot == 81;
         }
 
         @Override

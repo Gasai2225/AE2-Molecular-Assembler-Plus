@@ -12,7 +12,6 @@ public final class CCMenuTypes {
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(ForgeRegistries.MENU_TYPES, CCApplied.MODID);
 
-    // Регистрируем именно ТЕКУЩИЙ экземпляр TYPE из класса меню
     public static final RegistryObject<MenuType<ExtremePatternEncodingTermMenu>> EXTREME_PATTERN_TERM =
             MENUS.register("extreme_patternterm", () -> ExtremePatternEncodingTermMenu.TYPE);
     

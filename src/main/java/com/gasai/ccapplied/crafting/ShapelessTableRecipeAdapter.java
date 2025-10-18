@@ -6,9 +6,7 @@ import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.Optional;
 
-/**
- * Адаптер для ShapelessTableRecipe из ExtendedCrafting
- */
+
 public class ShapelessTableRecipeAdapter implements ITableRecipeAdapter {
     
     private final ShapelessTableRecipe recipe;

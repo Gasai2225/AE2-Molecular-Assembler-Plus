@@ -27,7 +27,6 @@ public class ExtremeBlankPatternItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        // можно сделать какую-нибудь визуалку или звук при использовании
         return super.use(level, player, hand);
     }
 }

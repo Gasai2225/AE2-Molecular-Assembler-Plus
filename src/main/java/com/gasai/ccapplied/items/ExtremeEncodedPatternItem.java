@@ -30,9 +30,9 @@ import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.core.localization.GuiText;
 
 /**
- * Предмет "Extreme Crafting Pattern".
- * Наследуемся от AE2 EncodedPatternItem ради UX (очистка по Shift, базовая логика),
- * но тултип переопределяем, чтобы показывал "Crafts" (как обычный крафтинговый шаблон).
+ * Item "Extreme Crafting Pattern".
+ * Extends AE2 EncodedPatternItem for UX (Shift clearing, basic logic),
+ * but overrides tooltip to show "Crafts" (like regular crafting template).
  */
 public class ExtremeEncodedPatternItem extends EncodedPatternItem {
 
@@ -50,34 +50,30 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
 
     @Override
     public void addToMainCreativeTab(CreativeModeTab.Output output) {
-        // скрываем в креативе (как обычные закодированные паттерны без NBT смысла не имеют)
     }
 
-    /* ===================== Кодирование ===================== */
+    /* ===================== Encoding ===================== */
 
     public ItemStack encode(GenericStack[] inputs81, GenericStack primaryOutput, @Nullable ResourceLocation recipeId) {
         var out = new ItemStack(this);
         var tag = new CompoundTag();
         var root = new CompoundTag();
 
-        // фиксируем параметры сетки (расширение до 9x9)
-        root.putBoolean(NBT_SHAPED, true); // базовый случай: shaped
+        root.putBoolean(NBT_SHAPED, true);
         root.putInt(NBT_W, 9);
         root.putInt(NBT_H, 9);
 
-        // inputs (81)
         var inList = new ListTag();
         for (int i = 0; i < ExtremeCraftingPattern.SLOTS; i++) {
             var gs = inputs81[i];
             if (gs == null) {
-                inList.add(new CompoundTag()); // пустой
+                inList.add(new CompoundTag());
                 continue;
             }
             inList.add(writeGenericItem(gs));
         }
         root.put(NBT_INPUTS, inList);
 
-        // outputs (минимум 1 — primary)
         var outs = new ListTag();
         outs.add(writeGenericItem(primaryOutput));
         root.put(NBT_OUTPUTS, outs);
@@ -92,12 +88,10 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
     }
 
     private static CompoundTag writeGenericItem(GenericStack gs) {
-        // строго AEItemKey + количество (+ NBT, если есть)
         var t = new CompoundTag();
         var key = (AEItemKey) gs.what();
         t.putString("item", key.getId().toString());
         t.putLong("amount", gs.amount());
-        // Сохраняем полную NBT, если предмет вариантный (как сингулярности)
         try {
             var stack = key.toStack((int) Math.max(1, Math.min(gs.amount(), 64)));
             if (stack.hasTag()) {
@@ -112,7 +106,6 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
         if (t.isEmpty() || !t.contains("item", Tag.TAG_STRING)) return null;
 
         String itemId = t.getString("item");
-        // Нормализуем дублированный namespace общего вида: ns:ns:item -> ns:item
         int firstColon = itemId.indexOf(":");
         if (firstColon > 0) {
             int secondColon = itemId.indexOf(":", firstColon + 1);
@@ -120,9 +113,7 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
                 String ns1 = itemId.substring(0, firstColon);
                 String ns2 = itemId.substring(firstColon + 1, secondColon);
                 if (ns1.equals(ns2)) {
-                    String original = itemId;
                     itemId = ns1 + ":" + itemId.substring(secondColon + 1);
-                    com.gasai.ccapplied.CCApplied.LOG.warn("[ExtremePattern] Fixed duplicate namespace in item ID: {} -> {}", original, itemId);
                 }
             }
         }
@@ -131,18 +122,12 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
         try {
             id = ResourceLocation.parse(itemId);
         } catch (Exception e) {
-            com.gasai.ccapplied.CCApplied.LOG.error("[ExtremePattern] Failed to parse item ID: {}", itemId, e);
             return null;
         }
 
-        var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id); // получаем сам Item
-        if (item == null) {
-            com.gasai.ccapplied.CCApplied.LOG.warn("[ExtremePattern] Item not found: {}", id);
-            return null;
-        }
+        var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id);
 
         var amount = t.contains("amount", Tag.TAG_LONG) ? t.getLong("amount") : 1L;
-        // Восстанавливаем ItemStack с NBT, чтобы ключ сохранил вариативность
         var stack = new ItemStack(item, (int) Math.max(1, Math.min(amount, 64)));
         if (t.contains("nbt", Tag.TAG_COMPOUND)) {
             try {
@@ -154,7 +139,7 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
         return new GenericStack(key, amount);
     }
 
-    /* ===================== Декодирование ===================== */
+    /* ===================== Decoding ===================== */
 
     @Override
     public @Nullable IPatternDetails decode(ItemStack stack, Level level, boolean tryRecovery) {
@@ -188,7 +173,6 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
             rid = ResourceLocation.parse(root.getString(NBT_RECIPE_ID));
         }
 
-        // Создаем ItemStack[] для входов и выхода
         ItemStack[] itemInputs = new ItemStack[ExtremeCraftingPattern.SLOTS];
         for (int i = 0; i < ExtremeCraftingPattern.SLOTS && i < in.length; i++) {
             if (in[i] != null && in[i].what() instanceof AEItemKey itemKey) {
@@ -215,9 +199,7 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
 
-        // Если игрок зажал Shift (альтернативное использование)
         if (player.isShiftKeyDown()) {
-            // выдаём наш пустой шаблон вместо ae2:blank_pattern
             if (!level.isClientSide) {
                 var blank = new ItemStack(com.gasai.ccapplied.core.registry.CCItems.EXTREME_BLANK_PATTERN.get());
                 player.setItemInHand(hand, blank);
@@ -225,11 +207,10 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
             return InteractionResultHolder.success(stack);
         }
 
-        // иначе — поведение AE2 по умолчанию
         return super.use(level, player, hand);
     }
 
-    /* ===================== Тултип ===================== */
+    /* ===================== Tooltip ===================== */
 
     @Override
     @OnlyIn(Dist.CLIENT)
@@ -255,7 +236,6 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
             first = false;
         }
 
-        // Агрегируем входы по ключу (учитывая NBT) чтобы показывать "Item xN" вместо дубликатов
         java.util.Map<appeng.api.stacks.AEKey, Long> totals = new java.util.LinkedHashMap<>();
         for (var input : details.getInputs()) {
             var primaryInputTemplate = input.getPossibleInputs()[0];
@@ -273,7 +253,6 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem {
             first = false;
         }
 
-        // без сабститутов — добавим строку "Substitute No", чтобы было «как у крафтинга»
         var substitutionLabel = GuiText.Substitute.text().copy().append(" ");
         lines.add(substitutionLabel.copy().append(GuiText.No.text()));
     }

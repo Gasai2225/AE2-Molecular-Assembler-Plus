@@ -26,7 +26,7 @@ public class ExtremePatternEncodingTerminalPart extends AbstractTerminalPart
         implements com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalMenuHost{
 
     public static final ResourceLocation MODEL_OFF = ResourceLocation.fromNamespaceAndPath(CCApplied.MODID,
-            "part/extreme_pattern_encoding_terminal_off"); // можно сделать свой ассет позже
+            "part/extreme_pattern_encoding_terminal_off");
     public static final ResourceLocation MODEL_ON = ResourceLocation.fromNamespaceAndPath(CCApplied.MODID,
             "part/extreme_pattern_encoding_terminal_on");
 
