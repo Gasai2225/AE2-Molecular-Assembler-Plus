@@ -2,6 +2,8 @@ package com.gasai.ccapplied.parts;
 
 import java.util.List;
 
+import com.gasai.ccapplied.CCApplied;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -15,23 +17,18 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
-import appeng.core.AppEng;
-import appeng.items.parts.PartModels;
 import appeng.parts.PartModel;
 import appeng.parts.reporting.AbstractTerminalPart;
-import appeng.menu.MenuOpener;
-import appeng.menu.locator.MenuLocators;
+
 
 
 public class ExtremePatternEncodingTerminalPart extends AbstractTerminalPart
         implements com.gasai.ccapplied.integration.ae2.api.IExtremePatternTerminalMenuHost{
 
-    @PartModels
-    public static final ResourceLocation MODEL_OFF = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID,
-            "part/pattern_encoding_terminal_off"); // можно сделать свой ассет позже
-    @PartModels
-    public static final ResourceLocation MODEL_ON = ResourceLocation.fromNamespaceAndPath(AppEng.MOD_ID,
-            "part/pattern_encoding_terminal_on");
+    public static final ResourceLocation MODEL_OFF = ResourceLocation.fromNamespaceAndPath(CCApplied.MODID,
+            "part/extreme_pattern_encoding_terminal_off"); // можно сделать свой ассет позже
+    public static final ResourceLocation MODEL_ON = ResourceLocation.fromNamespaceAndPath(CCApplied.MODID,
+            "part/extreme_pattern_encoding_terminal_on");
 
     public static final IPartModel MODELS_OFF = new PartModel(MODEL_BASE, MODEL_OFF, MODEL_STATUS_OFF);
     public static final IPartModel MODELS_ON = new PartModel(MODEL_BASE, MODEL_ON, MODEL_STATUS_ON);

@@ -28,7 +28,7 @@
       },
       "position": {
         "left": 8,
-        "bottom": 342
+        "top": 6
       }
     },
     "crafting_grid_title": {
@@ -77,10 +77,10 @@
 
   "widgets": {
     "extremeEncodePattern": {
-      "left": 227,
-      "bottom": 155,
-      "width": 40,
-      "height": 40,
+      "left": 173,
+      "bottom": 190,
+      "width": 16,
+      "height": 16,
       "texture": "guis/pattern_encoding_terminal.png",
       "textureWidth": 256,
       "textureHeight": 256,
@@ -88,8 +88,8 @@
       "hoverSrcRect": [240, 16, 16, 16]
     },
     "extremeClearPattern": {
-      "left": 167,
-      "bottom": 155,
+      "left": 173,
+      "bottom": 130,
       "width": 20,
       "height": 20,
       "texture": "guis/pattern_encoding_terminal.png",

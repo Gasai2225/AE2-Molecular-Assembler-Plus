@@ -22,7 +22,7 @@ public final class CCApplied {
      * Создает ResourceLocation для данного пути
      */
     public static ResourceLocation makeId(String path) {
-        return new ResourceLocation(MODID, path);
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 
     public CCApplied() {
@@ -33,8 +33,12 @@ public final class CCApplied {
         CCBlocks.BLOCK_ENTITIES.register(modBus);
         CCItems.ITEMS.register(modBus);
         CCMenuTypes.MENUS.register(modBus);
+        com.gasai.ccapplied.core.registry.CCCreativeTabs.CREATIVE_TABS.register(modBus);
 
         // ВАЖНО: регистрируем единожды
         PatternDetailsHelper.registerDecoder(ExtremePatternDecoder.INSTANCE);
+        
+        // Регистрируем модели частей AE2
+        com.gasai.ccapplied.client.CCPartModelRegistry.registerPartModels();
     }
 }

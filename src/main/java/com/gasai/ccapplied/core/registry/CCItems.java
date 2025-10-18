@@ -3,17 +3,11 @@ package com.gasai.ccapplied.core.registry;
 import com.gasai.ccapplied.CCApplied;
 import com.gasai.ccapplied.items.ExtremeBlankPatternItem;
 import com.gasai.ccapplied.items.ExtremeEncodedPatternItem;
-import com.gasai.ccapplied.items.ExtremePatternTerminalItem;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-@Mod.EventBusSubscriber(modid = CCApplied.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class CCItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, CCApplied.MODID);
@@ -38,15 +32,6 @@ public final class CCItems {
         )
 );
 
-    // Добавим в общий креатив таб для удобства (можно убрать)
-    @SubscribeEvent
-    public static void fillCreative(BuildCreativeModeTabContentsEvent e) {
-        if (e.getTabKey().equals(CreativeModeTabs.REDSTONE_BLOCKS)) {
-            e.accept(EXTREME_BLANK_PATTERN.get());
-            e.accept(EXTREME_CRAFTING_PATTERN.get());
-            e.accept(EXTREME_PATTERN_TERMINAL.get());
-        }
-    }
 
     private CCItems() {}
 }

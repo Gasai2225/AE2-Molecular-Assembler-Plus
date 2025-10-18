@@ -8,5 +8,6 @@
   "item.ccapplied.extreme_blank_pattern.desc": "Used to encode extreme crafting patterns (9x9)",
   "item.ccapplied.extreme_crafting_pattern": "Extreme Crafting Pattern",
   "item.ccapplied.extreme_pattern_terminal": "Extreme Pattern Terminal",
-  "block.ccapplied.extreme_molecular_assembler": "Extreme Molecular Assembler"
+  "block.ccapplied.extreme_molecular_assembler": "Extreme Molecular Assembler",
+  "itemGroup.ccapplied": "CCApplied"
 }

@@ -1,7 +1,12 @@
 {
-  "parent": "item/generated",
+  "parent": "ccapplied:item/display_base",
   "textures": {
-    "layer0": "ae2:item/part/pattern_encoding_terminal_off"
+    "front": "ccapplied:part/extreme_pattern_encoding_terminal",
+    "front_bright": "ccapplied:part/extreme_pattern_encoding_terminal_bright",
+    "front_medium": "ccapplied:part/extreme_pattern_encoding_terminal_medium",
+    "front_dark": "ccapplied:part/extreme_pattern_encoding_terminal_dark",
+    "front_medium_bright": "ccapplied:part/extreme_pattern_encoding_terminal",
+    "sides": "ae2:part/monitor_sides",
+    "back": "ae2:part/monitor_back"
   }
 }
-

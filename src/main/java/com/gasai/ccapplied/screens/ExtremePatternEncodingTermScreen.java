@@ -34,7 +34,6 @@ public class ExtremePatternEncodingTermScreen extends MEStorageScreen<ExtremePat
         
         // Создаем кастомную кнопку кодирования паттерна
         var encodeBtn = new ExtremeEncodeButton(menu);
-        encodeBtn.setHalfSize(true);
         widgets.add("extremeEncodePattern", encodeBtn);
         
         // Создаем кастомную кнопку очистки паттерна
