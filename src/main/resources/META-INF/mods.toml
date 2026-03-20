@@ -22,9 +22,19 @@ refmap="ccapplied.refmap.json"
 [[mods]]
 modId="ccapplied"
 version="1.0.0"
-displayName="CCApplied"
+displayName="AE2 Molecular Assembler Plus"
 description='''
-ChillCraft Applied Energystics Addon
+AE2 Molecular Assembler Plus
+
+RU:
+Автокрафт 9x9 для Applied Energistics 2 (AE2), расширенный молекулярный сборщик, кодировщик шаблонов и шаблоны.
+Сейчас мод работает ТОЛЬКО с Extended Crafting (EC). Позже добавлю поддержку Avaritia.
+Я молодой и неопытный разработчик — если найдёте баги или захотите помочь, буду очень благодарен.
+
+EN:
+9x9 auto-crafting for Applied Energistics 2 (AE2), an extended Molecular Assembler, a Pattern Encoding Terminal and templates.
+For now it works ONLY with Extended Crafting (EC). Later I will add support for Avaritia.
+I am a young and inexperienced developer. If you find bugs or want to help, thank you!
 '''
 
 [[dependencies.ccapplied]]
@@ -38,5 +48,19 @@ side="BOTH"
 modId="minecraft"
 mandatory=true
 versionRange="[1.20.1,1.21)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.ccapplied]]
+modId="appliedenergistics2"
+mandatory=true
+versionRange="[15.4.8,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.ccapplied]]
+modId="extendedcrafting"
+mandatory=true
+versionRange="[6.0.10,)"
 ordering="NONE"
 side="BOTH"
