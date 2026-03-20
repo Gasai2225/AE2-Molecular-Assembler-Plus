@@ -21,7 +21,7 @@ refmap="ccapplied.refmap.json"
 
 [[mods]]
 modId="ccapplied"
-version="1.0.0"
+version="${mod_version}"
 displayName="AE2 Molecular Assembler Plus"
 description='''
 AE2 Molecular Assembler Plus
