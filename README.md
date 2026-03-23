@@ -27,9 +27,3 @@ RU:
 2. Install the required mods (see “Requirements”).
 3. Drop this mod jar into `mods/`.
 
-## Notes
-If Forge can’t find required dependencies or the versions are too old, it will refuse to load the mod and tell you what’s missing.
-
-## License
-Your mod code is under **MIT** (see `LICENSE.txt`).
-
