@@ -8,7 +8,6 @@ import net.minecraft.world.item.ItemStack;
 
 import appeng.api.inventories.InternalInventory;
 import appeng.menu.guisync.GuiSync;
-import appeng.menu.implementations.MenuTypeBuilder;
 import appeng.menu.me.common.MEStorageMenu;
 import appeng.menu.slot.FakeSlot;
 import appeng.menu.SlotSemantics;
@@ -39,10 +38,10 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
     private static final int[] DRACONIC_OUTER_SLOTS = { 10, 19, 28, 37, 46, 55, 16, 25, 34, 43, 52, 61 };
 
     public static final MenuType<ExtremePatternEncodingTermMenu> TYPE =
-    MenuTypeBuilder.create(
+    CCMenuBuilder.create(
         ExtremePatternEncodingTermMenu::new,
         IExtremePatternTerminalMenuHost.class
-    ).build("extreme_patternterm");
+    );
 
     private final ExtremePatternEncodingLogic logic;
 

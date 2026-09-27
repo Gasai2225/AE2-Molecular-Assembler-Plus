@@ -3,7 +3,6 @@ package com.gasai.ccapplied.menus;
 import appeng.api.inventories.InternalInventory;
 import appeng.menu.guisync.GuiSync;
 import appeng.menu.SlotSemantics;
-import appeng.menu.implementations.MenuTypeBuilder;
 import appeng.menu.me.common.MEStorageMenu;
 import appeng.menu.slot.AppEngSlot;
 import appeng.menu.slot.FakeSlot;
@@ -45,9 +44,9 @@ public class DraconicPatternEncodingTermMenu extends MEStorageMenu {
     };
     public static final appeng.menu.SlotSemantic CATALYST_SLOT_SEMANTIC = SlotSemantics.register("DRACONIC_CATALYST", false);
 
-    public static final MenuType<DraconicPatternEncodingTermMenu> TYPE = MenuTypeBuilder.create(
+    public static final MenuType<DraconicPatternEncodingTermMenu> TYPE = CCMenuBuilder.create(
             DraconicPatternEncodingTermMenu::new,
-            IExtremePatternTerminalMenuHost.class).build("draconic_patternterm");
+            IExtremePatternTerminalMenuHost.class);
 
     private final ExtremePatternEncodingLogic logic;
     private final appeng.util.inv.AppEngInternalInventory craftingMatrix = new appeng.util.inv.AppEngInternalInventory(null, TOTAL_SLOTS);

@@ -2,13 +2,15 @@
   "$schema": "schema.json",
   "includes": ["common/common.json", "common/ext_player_inventory.json"],
   "background": {
-    "texture": "guis/extreme_molecular_assembler.png",
-    "srcRect": [0, 0, 256, 256]
+    "texture": "guis/extreme_molecular_assembler_tall.png",
+    "textureWidth": 256,
+    "textureHeight": 512,
+    "srcRect": [0, 0, 256, 288]
   },
   "slots": {
     "MACHINE_CRAFTING_GRID": {
       "left": 19,
-      "top": 5,
+      "top": 24,
       "grid": "BREAK_AFTER_9COLS"
     },
     "DRACONIC_SLOT_0": { "left": 84, "top": 31 },

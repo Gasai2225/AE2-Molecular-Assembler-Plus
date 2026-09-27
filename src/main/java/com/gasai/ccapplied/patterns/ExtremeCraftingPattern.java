@@ -12,7 +12,6 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
-import com.gasai.ccapplied.core.registry.CCItems;
 
 /**
  * Pattern for extreme crafting 9x9 - items only, shaped/unshaped
@@ -32,10 +31,10 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     @Nullable
     private final net.minecraft.resources.ResourceLocation recipeId;
     
-    public ExtremeCraftingPattern(GenericStack[] sparseInputs, GenericStack[] sparseOutputs, 
+    public ExtremeCraftingPattern(AEItemKey definition, GenericStack[] sparseInputs, GenericStack[] sparseOutputs,
                                 ItemStack[] inputs, ItemStack output, boolean shaped, int width, int height,
                                 @Nullable net.minecraft.resources.ResourceLocation recipeId) {
-        this.definition = AEItemKey.of(CCItems.EXTREME_CRAFTING_PATTERN.get());
+        this.definition = java.util.Objects.requireNonNull(definition);
         this.inputs = createInputs(sparseInputs);
         this.outputs = sparseOutputs;
         this.inputStacks = inputs;
@@ -46,14 +45,20 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
         this.recipeId = recipeId;
     }
     
-    public ExtremeCraftingPattern(GenericStack[] sparseInputs, GenericStack[] sparseOutputs, 
-                                ItemStack[] inputs, ItemStack output, boolean shaped) {
-        this(sparseInputs, sparseOutputs, inputs, output, shaped, 9, 9, null);
-    }
 
     @Override
     public AEItemKey getDefinition() {
         return definition;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof ExtremeCraftingPattern pattern && definition.equals(pattern.definition);
+    }
+
+    @Override
+    public int hashCode() {
+        return definition.hashCode();
     }
 
     @Override
@@ -92,7 +97,7 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
 
                     @Override
                     public @Nullable AEKey getRemainingKey(AEKey template) {
-                        return null;
+                        return template instanceof AEItemKey item ? AEItemKey.of(item.toStack().getCraftingRemainingItem()) : null;
                     }
                 });
             }
@@ -164,31 +169,21 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     
     @Override
     public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
-        NonNullList<ItemStack> remaining = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack stack = container.getItem(i);
-            if (!stack.isEmpty()) {
-                ItemStack patternStack = (i < inputStacks.length) ? inputStacks[i] : ItemStack.EMPTY;
-                if (!patternStack.isEmpty()) {
-                    int used = patternStack.getCount();
-                    int remainingCount = stack.getCount() - used;
-                    if (remainingCount > 0) {
-                        ItemStack remainingStack = stack.copy();
-                        remainingStack.setCount(remainingCount);
-                        remaining.set(i, remainingStack);
-                    } else {
-                        remaining.set(i, ItemStack.EMPTY);
-                    }
-                } else {
-                    remaining.set(i, ItemStack.EMPTY);
-                }
+        var remaining = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
+        for (int slot = 0; slot < container.getContainerSize(); slot++) {
+            ItemStack actual = container.getItem(slot);
+            ItemStack expected = slot < inputStacks.length ? inputStacks[slot] : ItemStack.EMPTY;
+            if (expected.isEmpty()) {
+                remaining.set(slot, actual.copy());
+            } else if (actual.getCount() > expected.getCount()) {
+                remaining.set(slot, actual.copyWithCount(actual.getCount() - expected.getCount()));
             } else {
-                remaining.set(i, ItemStack.EMPTY);
+                remaining.set(slot, actual.getCraftingRemainingItem());
             }
         }
         return remaining;
     }
-    
+
     @Override
     public boolean isItemValid(int slot, AEItemKey key, Level level) {
         if (slot < 0 || slot >= SLOTS) {
@@ -219,32 +214,6 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     
     @Override
     public void fillCraftingGrid(KeyCounter[] table, IMolecularAssemblerSupportedPattern.CraftingGridAccessor gridAccessor) {
-        for (int i = 0; i < SLOTS; i++) {
-            gridAccessor.set(i, ItemStack.EMPTY);
-        }
-        
-        for (int i = 0; i < Math.min(SLOTS, inputStacks.length); i++) {
-            ItemStack patternStack = inputStacks[i];
-            if (!patternStack.isEmpty()) {
-                AEItemKey patternKey = AEItemKey.of(patternStack);
-                if (patternKey != null) {
-                    for (KeyCounter counter : table) {
-                        if (counter != null && !counter.isEmpty()) {
-                            var entry = counter.iterator().next();
-                            if (entry.getKey() instanceof AEItemKey itemKey && 
-                                itemKey.equals(patternKey) && 
-                                entry.getLongValue() >= patternStack.getCount()) {
-                                
-                                ItemStack stack = itemKey.toStack(patternStack.getCount());
-                                gridAccessor.set(i, stack);
-                                
-                                counter.remove(itemKey, patternStack.getCount());
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        PatternInputs.fill(inputStacks, table, gridAccessor);
     }
 }

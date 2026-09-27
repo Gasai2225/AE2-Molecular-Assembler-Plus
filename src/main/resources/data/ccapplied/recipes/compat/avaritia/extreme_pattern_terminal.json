@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "type": "forge:mod_loaded",
-      "modid": "avaritia"
+      "type": "forge:item_exists",
+      "item": "avaritia:crystal_matrix_ingot"
+    },
+    {
+      "type": "forge:item_exists",
+      "item": "avaritia:extreme_crafting_table"
     }
   ],
   "pattern": [

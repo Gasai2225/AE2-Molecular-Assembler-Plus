@@ -14,7 +14,6 @@ import appeng.menu.slot.AppEngSlot;
 import appeng.menu.slot.OutputSlot;
 import appeng.menu.slot.RestrictedInputSlot;
 import appeng.menu.implementations.UpgradeableMenu;
-import appeng.menu.implementations.MenuTypeBuilder;
 import appeng.api.inventories.InternalInventory;
 import appeng.client.Point;
 import appeng.menu.slot.IOptionalSlot;
@@ -26,9 +25,8 @@ import com.gasai.ccapplied.patterns.DraconicFusionPattern;
 public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecularAssemblerTileEntity>
         implements IProgressProvider {
 
-    public static final MenuType<ExtremeMolecularAssemblerMenu> TYPE = MenuTypeBuilder
-            .create(ExtremeMolecularAssemblerMenu::new, ExtremeMolecularAssemblerTileEntity.class)
-            .build("extreme_molecular_assembler");
+    public static final MenuType<ExtremeMolecularAssemblerMenu> TYPE = CCMenuBuilder
+            .create(ExtremeMolecularAssemblerMenu::new, ExtremeMolecularAssemblerTileEntity.class);
 
     private static final int MAX_CRAFT_PROGRESS = 100;
     private final ExtremeMolecularAssemblerTileEntity molecularAssembler;
@@ -142,12 +140,8 @@ public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecu
             }
 
             var pattern = mac.getHost().getCurrentPattern();
-            if (pattern != null) {
-                return pattern.isSlotEnabled(slotIndex);
-            }
-            return mac.getHost().isTieredDraconicAssembler()
-                    ? slotIndex >= 0 && slotIndex < DraconicFusionPattern.TOTAL_INPUT_SLOTS
-                    : slotIndex >= 0 && slotIndex < 81;
+            // Match AE2: empty slots stay dimmed until a pattern enables them.
+            return pattern != null && pattern.isSlotEnabled(slotIndex);
         }
 
         @Override

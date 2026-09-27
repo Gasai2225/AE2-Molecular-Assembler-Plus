@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "ccapplied:chaotic_molecular_assembler",
+      "required": false
+    }
+  ]
+}

@@ -4,10 +4,9 @@
   "package": "com.gasai.ccapplied.mixins",
   "compatibilityLevel": "JAVA_17",
   "refmap": "ccapplied.refmap.json",
-  "mixins": [
-    "AssemblerAnimationPacketMixin"
-  ],
+  "mixins": [],
   "client": [
+    "AssemblerAnimationPacketMixin"
   ],
   "server": [
   ],

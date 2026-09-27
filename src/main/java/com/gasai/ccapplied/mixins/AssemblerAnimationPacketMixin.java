@@ -1,39 +1,29 @@
 package com.gasai.ccapplied.mixins;
 
+import appeng.client.render.crafting.AssemblerAnimationStatus;
+import appeng.core.sync.packets.AssemblerAnimationPacket;
+import com.gasai.ccapplied.tiles.ExtremeMolecularAssemblerTileEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
-import appeng.client.render.crafting.AssemblerAnimationStatus;
-import appeng.core.sync.packets.AssemblerAnimationPacket;
-
-import com.gasai.ccapplied.tiles.ExtremeMolecularAssemblerTileEntity;
-
-@Mixin(AssemblerAnimationPacket.class)
+@Mixin(value = AssemblerAnimationPacket.class, remap = false)
 public class AssemblerAnimationPacketMixin {
+    @Shadow
+    @Final
+    private BlockPos pos;
 
-    @Inject(method = "clientPacketData", at = @At("HEAD"), cancellable = true)
-    @OnlyIn(Dist.CLIENT)
+    @Inject(method = "clientPacketData", at = @At("HEAD"), cancellable = true, remap = false)
     private void onClientPacketData(Player player, CallbackInfo ci) {
-        AssemblerAnimationPacket packet = (AssemblerAnimationPacket) (Object) this;
-        try {
-            java.lang.reflect.Field posField = AssemblerAnimationPacket.class.getDeclaredField("pos");
-            posField.setAccessible(true);
-            net.minecraft.core.BlockPos pos = (net.minecraft.core.BlockPos) posField.get(packet);
-            
-            BlockEntity te = player.getCommandSenderWorld().getBlockEntity(pos);
-            
-            if (te instanceof ExtremeMolecularAssemblerTileEntity extremeAssembler) {
-                extremeAssembler.setAnimationStatus(new AssemblerAnimationStatus(packet.rate, packet.what.wrapForDisplayOrFilter()));
-                ci.cancel();
-            }
-        } catch (Exception e) {
+        if (player.getCommandSenderWorld().getBlockEntity(pos) instanceof ExtremeMolecularAssemblerTileEntity assembler) {
+            var packet = (AssemblerAnimationPacket) (Object) this;
+            assembler.setAnimationStatus(new AssemblerAnimationStatus(packet.rate, packet.what.wrapForDisplayOrFilter()));
+            ci.cancel();
         }
     }
 }
