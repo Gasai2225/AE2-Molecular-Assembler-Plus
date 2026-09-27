@@ -1,0 +1,4 @@
+{
+  "parent": "ae2:item/import_bus",
+  "textures": { "sides": "botania:block/manasteel_block" }
+}

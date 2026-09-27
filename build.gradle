@@ -23,6 +23,7 @@ tasks.named('wrapper', Wrapper).configure {
 sourceSets.main.resources { srcDir('src/generated/resources') }
 
 repositories {
+    maven { url = 'https://maven.theillusivec4.top/' }
     mavenCentral()
     maven {
         url = 'https://maven.neoforged.net/releases'
@@ -43,6 +44,14 @@ configurations {
 }
 
 dependencies {
+    // Botania remains optional for players; these dependencies enable integration tests.
+    compileOnly "vazkii.botania:botania-neoforge-1.21.1:457-20260922.100929-7"
+    // Development-only switch for verifying startup without the optional integration.
+    if (!providers.gradleProperty('withoutBotania').isPresent()) {
+        localRuntime "vazkii.botania:botania-neoforge-1.21.1:457-20260922.100929-7"
+        localRuntime "vazkii.patchouli:Patchouli:1.21.1-92-NEOFORGE"
+        localRuntime "top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1"
+    }
     implementation "net.neoforged:neoforge:${neo_version}"
 
     // JEI API (compile only) + local runtime
@@ -92,6 +101,8 @@ runs {
     }
 
     gameTestServer {
+        if (providers.gradleProperty('withoutBotania').isPresent())
+            workingDirectory project.layout.buildDirectory.dir('gametest-without-botania')
         systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
     }
 

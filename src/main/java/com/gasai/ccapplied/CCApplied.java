@@ -25,8 +25,13 @@ public final class CCApplied {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 
-    public CCApplied(IEventBus modBus) {
+    public CCApplied(IEventBus modBus, net.neoforged.fml.ModContainer container) {
         
+        if (com.gasai.ccapplied.core.registry.CCOptionalMods.isBotaniaLoaded()) {
+            com.gasai.ccapplied.botania.BotaniaContent.register(modBus);
+            container.registerConfig(net.neoforged.fml.config.ModConfig.Type.COMMON,
+                    com.gasai.ccapplied.botania.BotaniaConfig.SPEC, "ccapplied-botania.toml");
+        }
         CCBlocks.BLOCKS.register(modBus);
         CCBlocks.ITEMS.register(modBus);
         CCBlocks.BLOCK_ENTITIES.register(modBus);

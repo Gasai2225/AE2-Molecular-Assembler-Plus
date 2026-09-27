@@ -11,6 +11,14 @@ public final class CCCapabilities {
     }
 
     public static void register(RegisterCapabilitiesEvent event) {
+        if (CCOptionalMods.isBotaniaLoaded()) {
+            for (var entry : com.gasai.ccapplied.botania.BotanicalAssemblers.ENTRIES.values()) {
+                event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, entry.type().get(), (machine, side) -> machine);
+                event.registerBlockEntity(AECapabilities.CRAFTING_MACHINE, entry.type().get(), (machine, side) -> machine);
+                event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, entry.type().get(),
+                        com.gasai.ccapplied.botania.BotanicalAssemblerBlockEntity::getExposedItemHandler);
+            }
+        }
         register(event, CCBlocks.EXTREME_MOLECULAR_ASSEMBLER_TILE.get());
         if (CCBlocks.WYVERN_MOLECULAR_ASSEMBLER_TILE != null) {
             register(event, CCBlocks.WYVERN_MOLECULAR_ASSEMBLER_TILE.get());

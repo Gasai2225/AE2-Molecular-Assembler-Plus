@@ -11,6 +11,10 @@ import com.gasai.ccapplied.client.render.ExtremeMolecularAssemblerRenderer;
 public class InitAdditionalModels {
 
     public static void init(ModelEvent.RegisterAdditional event) {
+        if (com.gasai.ccapplied.core.registry.CCOptionalMods.isBotaniaLoaded())
+            event.register(ModelResourceLocation.standalone(com.gasai.ccapplied.botania.client.BotanicalAssemblerRenderer.PORTAL));
+        if (com.gasai.ccapplied.core.registry.CCOptionalMods.isBotaniaLoaded())
+            event.register(ModelResourceLocation.standalone(com.gasai.ccapplied.botania.client.BotanicalAssemblerRenderer.LIGHTS));
         event.register(ModelResourceLocation.standalone(ExtremeMolecularAssemblerRenderer.LIGHTS_MODEL));
     }
 }

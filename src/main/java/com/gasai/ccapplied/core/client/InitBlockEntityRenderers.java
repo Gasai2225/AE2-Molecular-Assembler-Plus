@@ -18,6 +18,10 @@ public final class InitBlockEntityRenderers {
     }
 
     public static void init() {
+        if (CCOptionalMods.isBotaniaLoaded()) {
+            for (var entry : com.gasai.ccapplied.botania.BotanicalAssemblers.ENTRIES.values())
+                register(entry.type().get(), com.gasai.ccapplied.botania.client.BotanicalAssemblerRenderer::new);
+        }
         register(CCBlocks.EXTREME_MOLECULAR_ASSEMBLER_TILE.get(), ExtremeMolecularAssemblerRenderer::new);
         if (CCOptionalMods.isDraconicEvolutionLoaded()) {
             register(CCBlocks.WYVERN_MOLECULAR_ASSEMBLER_TILE.get(), ExtremeMolecularAssemblerRenderer::new);

@@ -19,6 +19,9 @@ public final class CCCreativeTabs {
                     .title(Component.translatable("itemGroup.ccapplied"))
                     .icon(() -> new ItemStack(CCBlocks.EXTREME_MOLECULAR_ASSEMBLER_ITEM.get()))
                     .displayItems((parameters, output) -> {
+                        if (CCOptionalMods.isBotaniaLoaded()) {
+                            com.gasai.ccapplied.botania.BotaniaContent.addCreativeItems(output);
+                        }
                         output.accept(CCItems.EXTREME_BLANK_PATTERN.get());
                         output.accept(CCItems.EXTREME_PATTERN_TERMINAL.get());
                         if (CCOptionalMods.isDraconicEvolutionLoaded()) {

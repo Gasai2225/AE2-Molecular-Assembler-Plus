@@ -1,0 +1,119 @@
+{
+  "includes": [
+    "terminals/terminal.json"
+  ],
+  "slots": {
+    "MAGIC_REAGENT": {
+      "left": 0,
+      "top": 0
+    },
+    "BLANK_PATTERN": {
+      "left": 147,
+      "bottom": 238
+    },
+    "ENCODED_PATTERN": {
+      "left": 147,
+      "bottom": 194
+    }
+  },
+  "widgets": {
+    "encode": {
+      "left": 147,
+      "bottom": 216
+    },
+    "clear": {
+      "left": 124,
+      "bottom": 249
+    },
+    "substitutions": {
+      "left": 110,
+      "bottom": 249
+    },
+    "nextOutputs": {
+      "left": 147,
+      "bottom": 140
+    },
+    "station0": {
+      "left": 173,
+      "bottom": 260,
+      "width": 22,
+      "height": 22
+    },
+    "station1": {
+      "left": 173,
+      "bottom": 239,
+      "width": 22,
+      "height": 22
+    },
+    "station2": {
+      "left": 173,
+      "bottom": 218,
+      "width": 22,
+      "height": 22
+    },
+    "station3": {
+      "left": 173,
+      "bottom": 197,
+      "width": 22,
+      "height": 22
+    },
+    "station4": {
+      "left": 173,
+      "bottom": 176,
+      "width": 22,
+      "height": 22
+    },
+    "station5": {
+      "left": 173,
+      "bottom": 155,
+      "width": 22,
+      "height": 22
+    },
+    "station6": {
+      "left": 173,
+      "bottom": 134,
+      "width": 22,
+      "height": 22
+    },
+    "catalyst": {
+      "left": 66,
+      "bottom": 128,
+      "width": 18,
+      "height": 18
+    }
+  },
+  "text": {
+    "station": {
+      "position": {
+        "left": 8,
+        "bottom": 262
+      },
+      "text": {
+        "translate": "gui.ccapplied.magic.station.pool"
+      }
+    },
+    "catalyst": {
+      "position": {
+        "left": 75,
+        "bottom": 145
+      },
+      "align": "CENTER",
+      "text": {
+        "translate": "gui.ccapplied.magic.catalyst_label"
+      }
+    }
+  },
+  "terminalStyle": {
+    "bottom": {
+      "texture": "guis/magical_pattern_encoder.png",
+      "textureWidth": 256,
+      "textureHeight": 512,
+      "srcRect": [
+        0,
+        71,
+        195,
+        266
+      ]
+    }
+  }
+}

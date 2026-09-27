@@ -1,0 +1,7 @@
+{
+  "parent": "ae2:part/import_bus_base",
+  "textures": {
+    "back": "botania:block/manasteel_block",
+    "sidesStatus": "botania:block/manasteel_block"
+  }
+}

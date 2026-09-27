@@ -20,6 +20,7 @@ config="ccapplied.mixins.json"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+authors="${mod_authors}"
 description='''
 ${mod_description}
 '''
@@ -29,6 +30,13 @@ modId="neoforge"
 type="required"
 versionRange="[${neo_version},)"
 ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="botania"
+type="optional"
+versionRange="[0,)"
+ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
