@@ -18,6 +18,10 @@ public final class InitRenderTypes {
     }
 
     public static void init() {
+        if (CCOptionalMods.isBotaniaLoaded()) {
+            for (var entry : com.gasai.ccapplied.botania.BotanicalAssemblers.ENTRIES.values())
+                ItemBlockRenderTypes.setRenderLayer(entry.block().get(), RenderType.cutout());
+        }
         ItemBlockRenderTypes.setRenderLayer(CCBlocks.EXTREME_MOLECULAR_ASSEMBLER.get(), RenderType.cutout());
         if (CCOptionalMods.isDraconicEvolutionLoaded()) {
             ItemBlockRenderTypes.setRenderLayer(CCBlocks.WYVERN_MOLECULAR_ASSEMBLER.get(), RenderType.cutout());

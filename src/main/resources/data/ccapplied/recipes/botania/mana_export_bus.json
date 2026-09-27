@@ -1,0 +1,32 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "botania"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GLG",
+    "CPC",
+    "GLG"
+  ],
+  "key": {
+    "G": {
+      "item": "ae2:quartz_glass"
+    },
+    "L": {
+      "item": "botania:livingrock"
+    },
+    "C": {
+      "item": "ae2:formation_core"
+    },
+    "P": {
+      "item": "botania:mana_pool"
+    }
+  },
+  "result": {
+    "item": "ccapplied:mana_export_bus",
+    "count": 1
+  }
+}

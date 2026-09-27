@@ -28,6 +28,11 @@ public final class CCApplied {
     public CCApplied() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         
+        if (com.gasai.ccapplied.core.registry.CCOptionalMods.isBotaniaLoaded()) {
+            com.gasai.ccapplied.botania.BotaniaContent.register(modBus);
+            net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON,
+                    com.gasai.ccapplied.botania.BotaniaConfig.SPEC, "ccapplied-botania.toml");
+        }
         CCBlocks.BLOCKS.register(modBus);
         CCBlocks.ITEMS.register(modBus);
         CCBlocks.BLOCK_ENTITIES.register(modBus);

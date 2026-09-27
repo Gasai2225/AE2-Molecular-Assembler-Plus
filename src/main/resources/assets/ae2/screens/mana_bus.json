@@ -1,0 +1,48 @@
+{
+  "includes": [
+    "common/common.json",
+    "common/player_inventory.json"
+  ],
+  "generatedBackground": {
+    "width": 176,
+    "height": 184
+  },
+  "text": {
+    "dialog_title": {
+      "text": {
+        "translate": "gui.ccapplied.mana_bus"
+      },
+      "position": {
+        "left": 8,
+        "top": 6
+      }
+    },
+    "buffer": {
+      "text": {
+        "translate": "gui.ccapplied.mana_buffer"
+      },
+      "position": {
+        "left": 8,
+        "top": 26
+      }
+    },
+    "transfer": {
+      "text": {
+        "translate": "gui.ccapplied.mana_transfer"
+      },
+      "position": {
+        "left": 8,
+        "top": 44
+      }
+    },
+    "limit": {
+      "text": {
+        "translate": "gui.ccapplied.mana_limit"
+      },
+      "position": {
+        "left": 8,
+        "top": 62
+      }
+    }
+  }
+}

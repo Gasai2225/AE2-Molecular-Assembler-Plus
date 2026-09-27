@@ -1,6 +1,13 @@
 {
   "replace": false,
   "values": [
+    {"id": "ccapplied:pool_assembler", "required": false},
+    {"id": "ccapplied:runic_altar_assembler", "required": false},
+    {"id": "ccapplied:apothecary_assembler", "required": false},
+    {"id": "ccapplied:terra_plate_assembler", "required": false},
+    {"id": "ccapplied:elven_trade_assembler", "required": false},
+    {"id": "ccapplied:brewery_assembler", "required": false},
+    {"id": "ccapplied:pure_daisy_assembler", "required": false},
     {
       "id": "ccapplied:extreme_molecular_assembler",
       "required": false

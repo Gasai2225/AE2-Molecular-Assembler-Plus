@@ -55,6 +55,8 @@ minecraft {
         }
 
         gameTestServer {
+            if (providers.gradleProperty('withoutBotania').isPresent())
+                workingDirectory project.file('build/gametest-without-botania')
             property 'forge.enabledGameTestNamespaces', mod_id
         }
 
@@ -73,6 +75,7 @@ mixin {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    maven { url = 'https://maven.theillusivec4.top/' }
     flatDir { dirs 'libs' }
     maven {
         name = "Progwml6's maven"
@@ -93,6 +96,14 @@ repositories {
 }
 
 dependencies {
+    // Botania remains optional for players; these dependencies enable integration tests.
+    compileOnly fg.deobf("vazkii.botania:Botania:1.20.1-456-FORGE")
+    // Development-only switch for verifying startup without the optional integration.
+    if (!providers.gradleProperty('withoutBotania').isPresent()) {
+        runtimeOnly fg.deobf("vazkii.botania:Botania:1.20.1-456-FORGE")
+        runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:1.20.1-84-FORGE")
+        runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.14.1+1.20.1")
+    }
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
     // JEI API (compile only) + runtime

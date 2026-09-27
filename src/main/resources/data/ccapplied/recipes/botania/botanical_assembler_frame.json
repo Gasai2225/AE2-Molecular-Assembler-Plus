@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["TGT","GEG","TGT"],"key":{"T":{"item":"botania:terrasteel_ingot"},"G":{"item":"ae2:quartz_glass"},"E":{"item":"ae2:engineering_processor"}},"result":{"item":"ccapplied:botanical_assembler_frame","count":1},"conditions":[{"type":"forge:mod_loaded","modid":"botania"}]}

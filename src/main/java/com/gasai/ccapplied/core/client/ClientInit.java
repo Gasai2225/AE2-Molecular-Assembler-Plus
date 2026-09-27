@@ -17,6 +17,12 @@ public final class ClientInit {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent e) {
         e.enqueueWork(() -> {
+            if (CCOptionalMods.isBotaniaLoaded()) {
+                appeng.api.client.AEKeyRendering.register(
+                        com.gasai.ccapplied.botania.ManaKeyType.INSTANCE,
+                        com.gasai.ccapplied.botania.ManaKey.class,
+                        new com.gasai.ccapplied.botania.client.ManaKeyRenderer());
+            }
             InitRenderTypes.init();
             
             InitBlockEntityRenderers.init();
@@ -30,7 +36,24 @@ public final class ClientInit {
     }
 
     @SubscribeEvent
+    public static void onBlockColors(RegisterColorHandlersEvent.Block event) {
+        if (CCOptionalMods.isBotaniaLoaded()) {
+            for (var entry : com.gasai.ccapplied.botania.BotanicalAssemblers.ENTRIES.values())
+                event.register((state, level, pos, tint) ->
+                        com.gasai.ccapplied.botania.client.BotanicalAssemblerRenderer.FRAME_COLOR, entry.block().get());
+        }
+    }
+
+    @SubscribeEvent
     public static void onItemColors(RegisterColorHandlersEvent.Item event) {
+        if (CCOptionalMods.isBotaniaLoaded())
+            event.register((stack, tint) -> com.gasai.ccapplied.botania.client.BotanicalAssemblerRenderer.FRAME_COLOR,
+                    com.gasai.ccapplied.botania.BotaniaContent.ASSEMBLER_FRAME.get());
+        if (CCOptionalMods.isBotaniaLoaded()) {
+            event.register(
+                    (stack, tintIndex) -> AEColor.TRANSPARENT.getVariantByTintIndex(tintIndex),
+                    com.gasai.ccapplied.botania.BotaniaContent.MAGICAL_TERMINAL.get());
+        }
         event.register(
                 (stack, tintIndex) -> AEColor.TRANSPARENT.getVariantByTintIndex(tintIndex),
                 CCItems.EXTREME_PATTERN_TERMINAL.get());

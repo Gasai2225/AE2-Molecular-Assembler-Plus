@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shapeless","ingredients":[{"item":"ae2:molecular_assembler"},{"item":"botania:terra_plate"},{"item":"ccapplied:botanical_assembler_frame"}],"result":{"item":"ccapplied:terra_plate_assembler","count":1},"conditions":[{"type":"forge:mod_loaded","modid":"botania"}]}

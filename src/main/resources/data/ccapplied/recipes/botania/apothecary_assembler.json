@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shapeless","ingredients":[{"item":"ae2:molecular_assembler"},{"item":"botania:apothecary_default"},{"item":"ccapplied:botanical_assembler_frame"},{"item":"minecraft:water_bucket"}],"result":{"item":"ccapplied:apothecary_assembler","count":1},"conditions":[{"type":"forge:mod_loaded","modid":"botania"}]}

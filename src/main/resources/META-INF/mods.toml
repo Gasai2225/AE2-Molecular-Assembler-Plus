@@ -22,19 +22,23 @@ refmap="ccapplied.refmap.json"
 [[mods]]
 modId="ccapplied"
 version="${mod_version}"
-displayName="AE2 Molecular Assembler Plus"
+displayName="${mod_name}"
+authors="${mod_authors}"
 description='''
-AE2 Molecular Assembler Plus
-
-An Applied Energistics 2 auto-crafting addon with universal pattern encoding and molecular assemblers for recipes from different mods.
-Support is not limited to 9x9 crafting: integrations can handle large crafting grids, recipe tiers, catalysts, energy costs, and custom crafting stations.
-Current integrations include Extended Crafting, Re:Avaritia / AvaritiaNeo, and Draconic Evolution Fusion Crafting.
+${mod_description}
 '''
 [[dependencies.ccapplied]]
 modId="forge"
 mandatory=true
 versionRange="[47.3.0,)"
 ordering="NONE"
+side="BOTH"
+
+[[dependencies.ccapplied]]
+modId="botania"
+mandatory=false
+versionRange="[0,)"
+ordering="AFTER"
 side="BOTH"
 
 [[dependencies.ccapplied]]

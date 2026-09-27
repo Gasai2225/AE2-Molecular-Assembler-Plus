@@ -11,6 +11,10 @@ public final class CCOptionalMods {
     private CCOptionalMods() {
     }
 
+    public static boolean isBotaniaLoaded() {
+        return isLoaded("botania");
+    }
+
     public static boolean isDraconicEvolutionLoaded() {
         return DRACONIC_EVOLUTION_LOADED;
     }

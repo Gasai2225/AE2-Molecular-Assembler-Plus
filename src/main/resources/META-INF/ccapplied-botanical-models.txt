@@ -1,0 +1,14 @@
+Botanical assembler shell attribution
+
+assets/ccapplied/models/block/botanical_assembler_frame.json derives from
+Applied Energistics 2, TeamAppliedEnergistics:
+https://github.com/AppliedEnergistics/Applied-Energistics-2
+Source version: 15.4.8
+Source: src/main/resources/assets/ae2/models/block/molecular_assembler.json
+
+Changes: outer shell faces subdivided into frame/window regions so only
+frame pixels are tinted, plus tintindex 0 on twelve original beams.
+Surface positions and UVs are preserved. This model remains LGPL-3.0-or-later.
+See LGPL-3.0.txt. AE2 textures/light model and Botania models are referenced
+from the installed dependencies, not redistributed here.
+Botanical Machinery was studied, not copied.

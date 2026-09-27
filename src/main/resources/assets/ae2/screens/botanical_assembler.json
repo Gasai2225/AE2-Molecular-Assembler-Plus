@@ -1,0 +1,190 @@
+{
+  "includes": [
+    "common/common.json",
+    "common/player_inventory.json"
+  ],
+  "generatedBackground": {
+    "width": 176,
+    "height": 306
+  },
+  "slots": {
+    "ENCODED_PATTERN": {
+      "left": 148,
+      "top": 50
+    },
+    "BOTANICAL_JOB_PATTERN": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_0": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_0": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_1": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_1": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_2": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_2": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_3": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_3": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_4": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_4": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_5": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_5": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_6": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_6": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_7": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_7": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_8": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_8": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_9": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_9": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_10": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_10": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_11": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_11": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_12": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_12": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_13": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_13": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_14": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_14": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_15": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_15": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_16": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_16": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_INPUT_17": {
+      "left": -9999,
+      "top": -9999
+    },
+    "BOTANICAL_OUTPUT_17": {
+      "left": -9999,
+      "top": -9999
+    }
+  },
+  "text": {
+    "dialog_title": {
+      "text": {
+        "translate": "gui.ccapplied.assembler.title"
+      },
+      "position": {
+        "left": 8,
+        "top": 6
+      }
+    },
+    "state": {
+      "text": {
+        "translate": "gui.ccapplied.assembler.state.1"
+      },
+      "position": {
+        "left": 8,
+        "top": 20
+      }
+    }
+  },
+  "widgets": {
+    "nextOutputs": {
+      "left": 148,
+      "top": 170
+    }
+  }
+}

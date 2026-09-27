@@ -28,6 +28,8 @@ public class CCAppliedJeiPlugin implements IModPlugin {
         var helper = registration.getTransferHelper();
         registration.addRecipeTransferHandler(new ExtremeJeiRecipeTransferHandler(helper), RecipeTypes.CRAFTING);
         registerDraconicFusionTransfer(registration);
+        if (com.gasai.ccapplied.core.registry.CCOptionalMods.isBotaniaLoaded())
+            MagicalJeiRecipeTransferHandler.register(registration);
 
         registerReflectedTransfer(registration, helper,
                 "com.blakebr0.extendedcrafting.compat.jei.category.table.BasicTableCategory");

@@ -19,6 +19,14 @@ public final class ExtremePatternTerminalClientHelper {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+            if (CCOptionalMods.isBotaniaLoaded()) {
+                CCAppliedInitScreens.register(com.gasai.ccapplied.botania.BotaniaContent.ASSEMBLER_MENU.get(),
+                        com.gasai.ccapplied.botania.client.BotanicalAssemblerScreen::new, "/screens/botanical_assembler.json");
+                CCAppliedInitScreens.register(com.gasai.ccapplied.botania.BotaniaContent.MAGICAL_TERMINAL_MENU.get(),
+                        com.gasai.ccapplied.botania.client.MagicalTerminalScreen::new, "/screens/magical_terminal.json");
+                CCAppliedInitScreens.register(com.gasai.ccapplied.botania.BotaniaContent.MANA_BUS_MENU.get(),
+                        com.gasai.ccapplied.botania.client.ManaBusScreen::new, "/screens/mana_bus.json");
+            }
             CCAppliedInitScreens.register(CCMenuTypes.EXTREME_PATTERN_TERM.get(),
                     ExtremePatternEncodingTermScreen::new, "/screens/ccterminal/extreme_pattern_encoding_terminal.json");
             if (CCOptionalMods.isDraconicEvolutionLoaded()) {
