@@ -26,21 +26,21 @@ ${mod_description}
 
 [[dependencies.${mod_id}]]
 modId="neoforge"
-mandatory=true
+type="required"
 versionRange="[${neo_version},)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="minecraft"
-mandatory=true
+type="required"
 versionRange="${minecraft_version_range}"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="ae2"
-mandatory=true
+type="required"
 versionRange="[19.2.17,)"
 ordering="NONE"
 side="BOTH"

@@ -131,7 +131,7 @@ public class ExtremeEncodedPatternItem extends EncodedPatternItem<IPatternDetail
             itemOutput = outputKey.toStack((int) outputs.get(0).amount());
         }
 
-        return new ExtremeCraftingPattern(in, outputs.toArray(GenericStack[]::new), itemInputs, itemOutput, shaped, w, h, rid);
+        return new ExtremeCraftingPattern(AEItemKey.of(stack), in, outputs.toArray(GenericStack[]::new), itemInputs, itemOutput, shaped, w, h, rid);
     }
 
     public @Nullable IPatternDetails decode(AEItemKey what, Level level) {

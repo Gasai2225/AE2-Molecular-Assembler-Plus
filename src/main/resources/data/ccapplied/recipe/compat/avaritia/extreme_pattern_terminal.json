@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CPC",
+    "TET",
+    "CPC"
+  ],
+  "key": {
+    "C": {
+      "item": "avaritia:crystal_matrix_ingot"
+    },
+    "P": {
+      "item": "ccapplied:extreme_blank_pattern"
+    },
+    "T": {
+      "item": "avaritia:extreme_crafting_table"
+    },
+    "E": {
+      "item": "ae2:pattern_encoding_terminal"
+    }
+  },
+  "result": {
+    "id": "ccapplied:extreme_pattern_terminal"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "avaritia:crystal_matrix_ingot"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "avaritia:extreme_crafting_table"
+    }
+  ]
+}

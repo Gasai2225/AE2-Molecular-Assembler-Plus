@@ -144,6 +144,7 @@ public class DraconicEncodedPatternItem extends EncodedPatternItem<IPatternDetai
         }
 
         return new DraconicFusionPattern(
+                AEItemKey.of(stack),
                 inputs,
                 outputs.toArray(GenericStack[]::new),
                 inputStacks,

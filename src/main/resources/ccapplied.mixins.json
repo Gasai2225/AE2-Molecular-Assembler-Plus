@@ -3,10 +3,9 @@
   "minVersion": "0.8",
   "package": "com.gasai.ccapplied.mixins",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "AssemblerAnimationPacketMixin"
-  ],
+  "mixins": [],
   "client": [
+    "AssemblerAnimationPacketMixin"
   ],
   "server": [
   ],

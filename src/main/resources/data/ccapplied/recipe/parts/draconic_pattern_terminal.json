@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DBD",
+    "CTC",
+    "DID"
+  ],
+  "key": {
+    "D": {
+      "item": "draconicevolution:draconium_ingot"
+    },
+    "B": {
+      "item": "ccapplied:draconic_blank_pattern"
+    },
+    "C": {
+      "item": "draconicevolution:draconium_core"
+    },
+    "T": {
+      "item": "ae2:pattern_encoding_terminal"
+    },
+    "I": {
+      "item": "draconicevolution:wyvern_crafting_injector"
+    }
+  },
+  "result": {
+    "id": "ccapplied:draconic_pattern_terminal"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "draconicevolution"
+    }
+  ]
+}

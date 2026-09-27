@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CMC",
+    "TAT",
+    "CIC"
+  ],
+  "key": {
+    "C": {
+      "item": "avaritia:crystal_matrix_ingot"
+    },
+    "M": {
+      "item": "ae2:molecular_assembler"
+    },
+    "T": {
+      "item": "avaritia:extreme_crafting_table"
+    },
+    "A": {
+      "item": "ae2:crafting_unit"
+    },
+    "I": {
+      "item": "avaritia:infinity_catalyst"
+    }
+  },
+  "result": {
+    "id": "ccapplied:extreme_molecular_assembler"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "avaritia:crystal_matrix_ingot"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "avaritia:extreme_crafting_table"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "avaritia:infinity_catalyst"
+    }
+  ]
+}

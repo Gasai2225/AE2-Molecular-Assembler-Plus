@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CPC",
+    "PDP",
+    "CPC"
+  ],
+  "key": {
+    "C": {
+      "item": "avaritia:crystal_matrix_ingot"
+    },
+    "P": {
+      "item": "ae2:blank_pattern"
+    },
+    "D": {
+      "item": "avaritia:diamond_lattice"
+    }
+  },
+  "result": {
+    "id": "ccapplied:extreme_blank_pattern",
+    "count": 16
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "avaritia:crystal_matrix_ingot"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "avaritia:diamond_lattice"
+    }
+  ]
+}

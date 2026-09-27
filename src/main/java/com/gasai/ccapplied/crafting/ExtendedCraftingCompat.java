@@ -1,215 +1,56 @@
 package com.gasai.ccapplied.crafting;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+/** Uses the integration's own matching rules, including mirrors and overlapping ingredients. */
 final class ExtendedCraftingCompat {
-
     private ExtendedCraftingCompat() {
     }
 
-    static @Nullable ExtremeRecipeMatch findRecipe(ItemStack[] craftingGrid, Level level) {
-        if (level == null || craftingGrid == null || craftingGrid.length != 81 || isEmptyGrid(craftingGrid)) {
+    static @Nullable ExtremeRecipeMatch findRecipe(ItemStack[] grid, Level level) {
+        if (level == null || grid == null || grid.length != 81) {
             return null;
         }
-
-        try {
-            for (var recipe : level.getRecipeManager().getRecipes()) {
-                if (isTableRecipe(recipe.value()) && matches(recipe.value(), craftingGrid)) {
-                    ItemStack result = getResult(recipe.value(), craftingGrid, level);
-                    if (result.isEmpty()) {
-                        continue;
-                    }
-                    return new ExtremeRecipeMatch(
-                            result,
-                            recipe.id(),
-                            "extendedcrafting");
-                }
-            }
-        } catch (Exception e) {
-            com.gasai.ccapplied.CCApplied.LOG.warn("Error matching ExtendedCrafting recipe", e);
-        }
-
-        return null;
-    }
-
-    private static boolean isTableRecipe(Recipe<?> recipe) {
-        try {
-            Class<?> tableRecipe = Class.forName("com.blakebr0.extendedcrafting.api.crafting.ITableRecipe");
-            return tableRecipe.isInstance(recipe);
-        } catch (ClassNotFoundException ignored) {
-        }
-
-        Class<?> current = recipe.getClass();
-        while (current != null) {
-            for (Class<?> iface : current.getInterfaces()) {
-                if (iface.getName().equals("com.blakebr0.extendedcrafting.api.crafting.ITableRecipe")) {
-                    return true;
-                }
-            }
-            current = current.getSuperclass();
-        }
-        return false;
-    }
-
-    private static boolean matches(Recipe<?> recipe, ItemStack[] craftingGrid) {
-        try {
-            Integer width = invokeInt(recipe, "getWidth", "width", "recipeWidth");
-            Integer height = invokeInt(recipe, "getHeight", "height", "recipeHeight");
-
-            if (width != null && height != null) {
-                return matchesShaped(recipe, craftingGrid, width, height);
-            }
-
-            return matchesShapeless(recipe, craftingGrid);
-        } catch (Exception e) {
-            com.gasai.ccapplied.CCApplied.LOG.warn("Error matching ExtendedCrafting recipe", e);
-            return false;
-        }
-    }
-
-    private static boolean matchesShaped(Recipe<?> recipe, ItemStack[] craftingGrid, int width, int height) {
-        if (width > 9 || height > 9) {
-            return false;
-        }
-
-        var ingredients = recipe.getIngredients();
-        for (int startY = 0; startY <= 9 - height; startY++) {
-            for (int startX = 0; startX <= 9 - width; startX++) {
-                if (matchesRecipeAtPosition(ingredients, craftingGrid, startX, startY, width, height)) {
-                    return true;
-                }
+        int left = 9, top = 9, right = -1, bottom = -1;
+        for (int slot = 0; slot < grid.length; slot++) {
+            if (grid[slot] != null && !grid[slot].isEmpty()) {
+                left = Math.min(left, slot % 9);
+                top = Math.min(top, slot / 9);
+                right = Math.max(right, slot % 9);
+                bottom = Math.max(bottom, slot / 9);
             }
         }
-
-        return false;
-    }
-
-    static ItemStack getResult(Recipe<?> recipe, ItemStack[] craftingGrid, Level level) {
-        try {
-            return recipe.getResultItem(level.registryAccess()).copy();
-        } catch (Exception ignored) {
+        if (right < 0) {
+            return null;
         }
-
-        return ItemStack.EMPTY;
-    }
-
-    private static boolean matchesRecipeAtPosition(
-            List<Ingredient> ingredients,
-            ItemStack[] craftingGrid,
-            int startX,
-            int startY,
-            int width,
-            int height) {
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int recipeIndex = x + y * width;
-                int gridIndex = (startX + x) + (startY + y) * 9;
-
-                var ingredient = recipeIndex < ingredients.size()
-                        ? ingredients.get(recipeIndex)
-                        : Ingredient.EMPTY;
-                var gridStack = craftingGrid[gridIndex];
-
-                if (!ingredient.isEmpty()) {
-                    if (gridStack.isEmpty() || !ingredient.test(gridStack)) {
-                        return false;
-                    }
-                } else if (!gridStack.isEmpty()) {
-                    return false;
-                }
-            }
-        }
-
-        for (int y = 0; y < 9; y++) {
-            for (int x = 0; x < 9; x++) {
-                int gridIndex = x + y * 9;
-                if ((x < startX || x >= startX + width || y < startY || y >= startY + height)
-                        && !craftingGrid[gridIndex].isEmpty()) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private static boolean matchesShapeless(Recipe<?> recipe, ItemStack[] craftingGrid) {
-        var availableItems = new ArrayList<ItemStack>();
-        for (ItemStack stack : craftingGrid) {
-            if (stack != null && !stack.isEmpty()) {
-                availableItems.add(stack.copy());
-            }
-        }
-
-        for (var ingredient : recipe.getIngredients()) {
-            if (ingredient.isEmpty()) {
+        for (var entry : level.getRecipeManager().getRecipes()) {
+            if (!(entry.value() instanceof ITableRecipe recipe)) {
                 continue;
             }
-
-            boolean found = false;
-            for (int i = 0; i < availableItems.size(); i++) {
-                if (ingredient.test(availableItems.get(i))) {
-                    availableItems.remove(i);
-                    found = true;
-                    break;
+            int tier = recipe.hasRequiredTier() ? recipe.getTier() : 4;
+            int size = tier * 2 + 1;
+            if (tier < 1 || tier > 4 || right - left >= size || bottom - top >= size) {
+                continue;
+            }
+            var items = new java.util.ArrayList<ItemStack>(size * size);
+            for (int y = 0; y < size; y++) {
+                for (int x = 0; x < size; x++) {
+                    ItemStack stack = x + left < 9 && y + top < 9 ? grid[x + left + (y + top) * 9] : ItemStack.EMPTY;
+                    items.add(stack == null ? ItemStack.EMPTY : stack.copy());
                 }
             }
-
-            if (!found) {
-                return false;
-            }
-        }
-
-        return availableItems.isEmpty();
-    }
-
-    private static @Nullable Integer invokeInt(Object target, String... methodNames) {
-        for (String methodName : methodNames) {
-            try {
-                Method method = findMethod(target.getClass(), methodName);
-                Object value = method.invoke(target);
-                return value instanceof Number number ? number.intValue() : null;
-            } catch (ReflectiveOperationException ignored) {
+            var input = TableCraftingInput.of(size, size, items, tier);
+            if (recipe.matches(input, level)) {
+                ItemStack result = recipe.assemble(input, level.registryAccess());
+                if (!result.isEmpty()) {
+                    return new ExtremeRecipeMatch(result, entry.id(), "extendedcrafting");
+                }
             }
         }
         return null;
-    }
-
-    private static Method findMethod(Class<?> owner, String name) throws NoSuchMethodException {
-        Class<?> current = owner;
-        while (current != null) {
-            try {
-                Method method = current.getMethod(name);
-                method.setAccessible(true);
-                return method;
-            } catch (NoSuchMethodException ignored) {
-            }
-            try {
-                Method method = current.getDeclaredMethod(name);
-                method.setAccessible(true);
-                return method;
-            } catch (NoSuchMethodException ignored) {
-            }
-            current = current.getSuperclass();
-        }
-        throw new NoSuchMethodException(name);
-    }
-
-    private static boolean isEmptyGrid(ItemStack[] craftingGrid) {
-        for (ItemStack stack : craftingGrid) {
-            if (stack != null && !stack.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
     }
 }

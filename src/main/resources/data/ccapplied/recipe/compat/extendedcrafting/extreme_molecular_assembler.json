@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CMC",
+    "TAT",
+    "CMC"
+  ],
+  "key": {
+    "C": {
+      "item": "extendedcrafting:ultimate_component"
+    },
+    "M": {
+      "item": "ae2:molecular_assembler"
+    },
+    "T": {
+      "item": "extendedcrafting:ultimate_table"
+    },
+    "A": {
+      "item": "extendedcrafting:crafting_core"
+    }
+  },
+  "result": {
+    "id": "ccapplied:extreme_molecular_assembler"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "extendedcrafting"
+    }
+  ]
+}

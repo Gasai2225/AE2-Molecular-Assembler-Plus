@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AMA",
+    "MCM",
+    "AMA"
+  ],
+  "key": {
+    "A": {
+      "item": "ae2:annihilation_core"
+    },
+    "M": {
+      "item": "ae2:molecular_assembler"
+    },
+    "C": {
+      "item": "ae2:crafting_unit"
+    }
+  },
+  "result": {
+    "id": "ccapplied:extreme_molecular_assembler"
+  }
+}

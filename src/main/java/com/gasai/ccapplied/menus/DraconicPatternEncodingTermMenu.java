@@ -47,7 +47,7 @@ public class DraconicPatternEncodingTermMenu extends MEStorageMenu {
 
     public static final MenuType<DraconicPatternEncodingTermMenu> TYPE = MenuTypeBuilder.create(
             DraconicPatternEncodingTermMenu::new,
-            IExtremePatternTerminalMenuHost.class).build("draconic_patternterm");
+            IExtremePatternTerminalMenuHost.class).buildUnregistered(com.gasai.ccapplied.CCApplied.makeId("draconic_patternterm"));
 
     private final ExtremePatternEncodingLogic logic;
     private final InternalInventory craftingMatrix;

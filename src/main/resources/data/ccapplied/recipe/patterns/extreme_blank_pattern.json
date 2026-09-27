@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "PCP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "ae2:blank_pattern"
+    },
+    "C": {
+      "item": "ae2:calculation_processor"
+    }
+  },
+  "result": {
+    "id": "ccapplied:extreme_blank_pattern",
+    "count": 4
+  }
+}

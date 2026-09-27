@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CPC",
+    "TET",
+    "CPC"
+  ],
+  "key": {
+    "C": {
+      "item": "extendedcrafting:ultimate_component"
+    },
+    "P": {
+      "item": "ccapplied:extreme_blank_pattern"
+    },
+    "T": {
+      "item": "extendedcrafting:ultimate_table"
+    },
+    "E": {
+      "item": "ae2:pattern_encoding_terminal"
+    }
+  },
+  "result": {
+    "id": "ccapplied:extreme_pattern_terminal"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "extendedcrafting"
+    }
+  ]
+}

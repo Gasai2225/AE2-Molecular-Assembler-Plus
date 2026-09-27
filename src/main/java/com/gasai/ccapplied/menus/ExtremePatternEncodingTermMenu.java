@@ -42,7 +42,7 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu {
     MenuTypeBuilder.create(
         ExtremePatternEncodingTermMenu::new,
         IExtremePatternTerminalMenuHost.class
-    ).build("extreme_patternterm");
+    ).buildUnregistered(com.gasai.ccapplied.CCApplied.makeId("extreme_patternterm"));
 
     private final ExtremePatternEncodingLogic logic;
 

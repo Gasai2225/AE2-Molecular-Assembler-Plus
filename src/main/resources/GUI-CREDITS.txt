@@ -1,0 +1,12 @@
+The following modified GUI textures use pixel elements from Applied Energistics 2:
+  assets/ae2/textures/guis/extreme_pattern_encoder.png
+  assets/ae2/textures/guis/draconic_pattern_encoder.png
+  assets/ae2/textures/guis/extreme_molecular_assembler.png
+
+Original textures: (c) 2020 Ridanisaurus Rid; (c) 2013-2020 AlgorithmX2 et al.
+Source: https://github.com/AppliedEnergistics/Applied-Energistics-2/tree/fd8b717a405672ce4f65ba540f1db8c91317daa4/src/main/resources/assets/ae2/textures/guis
+Source files: pattern.png and molecular_assembler.png.
+Changes: rearranged native panels, slots and progress regions for this addon's layouts.
+These modified textures remain licensed under CC BY-NC-SA 3.0:
+https://creativecommons.org/licenses/by-nc-sa/3.0/
+No endorsement by the original authors is implied.

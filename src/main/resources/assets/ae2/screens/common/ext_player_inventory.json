@@ -3,12 +3,12 @@
   "slots": {
     "PLAYER_INVENTORY": {
       "left": 55,
-      "bottom": 80,
+      "bottom": 84,
       "grid": "BREAK_AFTER_9COLS"
     },
     "PLAYER_HOTBAR": {
       "left": 55,
-      "bottom": 23,
+      "bottom": 26,
       "grid": "HORIZONTAL"
     }
   },
@@ -19,7 +19,7 @@
       },
       "position": {
         "left": 55,
-        "bottom": 92
+        "bottom": 95
       }
     }
   }

@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "ccapplied:extreme_molecular_assembler",
+      "required": false
+    },
+    {
+      "id": "ccapplied:wyvern_molecular_assembler",
+      "required": false
+    },
+    {
+      "id": "ccapplied:draconic_molecular_assembler",
+      "required": false
+    },
+    {
+      "id": "ccapplied:chaotic_molecular_assembler",
+      "required": false
+    }
+  ]
+}

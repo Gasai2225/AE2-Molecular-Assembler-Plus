@@ -28,7 +28,7 @@ public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecu
 
     public static final MenuType<ExtremeMolecularAssemblerMenu> TYPE = MenuTypeBuilder
             .create(ExtremeMolecularAssemblerMenu::new, ExtremeMolecularAssemblerTileEntity.class)
-            .build("extreme_molecular_assembler");
+            .buildUnregistered(com.gasai.ccapplied.CCApplied.makeId("extreme_molecular_assembler"));
 
     private static final int MAX_CRAFT_PROGRESS = 100;
     private final ExtremeMolecularAssemblerTileEntity molecularAssembler;

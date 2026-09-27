@@ -161,12 +161,11 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
             boolean isEmpty = this.gridInv.isEmpty() && this.patternInv.isEmpty();
 
             if (isEmpty && patternDetails instanceof IMolecularAssemblerSupportedPattern pattern) {
-                if (canCraftPattern(pattern)) {
+                if (canCraftPattern(pattern) && this.fillGrid(table, pattern)) {
                     this.forcePlan = true;
                     this.myPlan = pattern;
                     this.pushDirection = where;
 
-                    this.fillGrid(table, pattern);
 
                     this.updateSleepiness();
                     this.saveChanges();
@@ -224,15 +223,34 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
         return AssemblerTier.CHAOTIC;
     }
 
-    private void fillGrid(KeyCounter[] table, IMolecularAssemblerSupportedPattern adapter) {
-        adapter.fillCraftingGrid(table, this.gridInv::setItemDirect);
-
-        for (var list : table) {
-            list.removeZeros();
-            if (!list.isEmpty()) {
-                throw new RuntimeException("Could not fill grid with some items, including " + list.iterator().next());
+    private boolean fillGrid(KeyCounter[] table, IMolecularAssemblerSupportedPattern pattern) {
+        KeyCounter[] available = new KeyCounter[table.length];
+        for (int i = 0; i < table.length; i++) {
+            available[i] = new KeyCounter();
+            if (table[i] != null) {
+                available[i].addAll(table[i]);
             }
         }
+        var candidate = new TransientCraftingContainer(new AutoCraftingMenu(), 9, 9);
+        pattern.fillCraftingGrid(available, candidate::setItem);
+        if (pattern.assemble(candidate, getLevel()).isEmpty()) {
+            return false;
+        }
+        for (KeyCounter counter : available) {
+            counter.removeZeros();
+            if (!counter.isEmpty()) {
+                return false;
+            }
+        }
+        for (int i = 0; i < 81; i++) {
+            this.gridInv.setItemDirect(i, candidate.getItem(i));
+        }
+        for (KeyCounter counter : table) {
+            if (counter != null) {
+                counter.clear();
+            }
+        }
+        return true;
     }
 
     private void updateSleepiness() {
@@ -294,7 +312,9 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
                 var compound = new CompoundTag();
                 pattern.save(provider, compound);
                 data.put("myPlan", compound);
-                data.putInt("pushDirection", this.pushDirection.ordinal());
+                if (this.pushDirection != null) {
+                    data.putInt("pushDirection", this.pushDirection.ordinal());
+                }
             }
         }
 
@@ -319,7 +339,8 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
             if (!pattern.isEmpty()) {
                 this.forcePlan = true;
                 this.myPattern = pattern;
-                this.pushDirection = Direction.values()[data.getInt("pushDirection")];
+                this.pushDirection = data.contains("pushDirection")
+                        ? Direction.from3DDataValue(data.getInt("pushDirection")) : null;
             }
         }
 
@@ -512,16 +533,18 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
 
                 var craftingRemainders = this.myPlan.getRemainingItems(this.craftingInv);
 
-                this.pushOut(output.copy());
-
+                // Consume inputs before external insertion can trigger inventory callbacks.
                 for (int x = 0; x < this.craftingInv.getContainerSize(); x++) {
                     this.gridInv.setItemDirect(x, craftingRemainders.get(x));
                 }
+                this.pushOut(output.copy());
 
                 if (this.patternInv.isEmpty()) {
                     this.forcePlan = false;
                     this.myPlan = null;
-                    this.pushDirection = null;
+                    if (this.gridInv.isEmpty()) {
+                        this.pushDirection = null;
+                    }
                 }
                 this.fusionEnergyAccumulated = 0L;
                 this.fusionCraftTicks = 0;
@@ -562,11 +585,13 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
                 return TickRateModulation.FASTER;
             }
             this.fusionEnergyAccumulated = Math.min(required, this.fusionEnergyAccumulated + pulled);
+            this.saveChanges();
             this.progress = Math.min(50.0, (this.fusionEnergyAccumulated * 50.0) / required);
             return TickRateModulation.FASTER;
         }
 
         this.fusionCraftTicks += Math.max(1, ticksSinceLastCall);
+        this.saveChanges();
         if (this.fusionCraftTicks < craftTicks) {
             this.progress = 50.0 + (this.fusionCraftTicks * 50.0) / craftTicks;
             return TickRateModulation.FASTER;
@@ -693,10 +718,6 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
             output = this.pushTo(output, this.pushDirection);
         }
 
-        if (output.isEmpty() && this.forcePlan) {
-            this.forcePlan = false;
-            this.recalculatePlan();
-        }
 
         this.gridInv.setItemDirect(81, output);
     }
