@@ -12,7 +12,8 @@ final class ExtendedCraftingCompat {
     private ExtendedCraftingCompat() {
     }
 
-    static @Nullable ExtremeRecipeMatch findRecipe(ItemStack[] grid, Level level) {
+    static @Nullable ExtremeRecipeMatch findRecipe(ItemStack[] grid, Level level,
+            @Nullable net.minecraft.resources.ResourceLocation recipeId) {
         if (level == null || grid == null || grid.length != 81) {
             return null;
         }
@@ -29,6 +30,7 @@ final class ExtendedCraftingCompat {
             return null;
         }
         for (var entry : level.getRecipeManager().getRecipes()) {
+            if (recipeId != null && !recipeId.equals(entry.getId())) continue;
             if (!(entry instanceof ITableRecipe recipe)) {
                 continue;
             }
@@ -37,17 +39,20 @@ final class ExtendedCraftingCompat {
             if (tier < 1 || tier > 4 || right - left >= size || bottom - top >= size) {
                 continue;
             }
+            int originX = Math.min(left, 9 - size);
+            int originY = Math.min(top, 9 - size);
             var input = new TransientCraftingContainer(new AutoCraftingMenu(), size, size);
             for (int y = 0; y < size; y++) {
                 for (int x = 0; x < size; x++) {
-                    ItemStack stack = x + left < 9 && y + top < 9 ? grid[x + left + (y + top) * 9] : ItemStack.EMPTY;
+                    ItemStack stack = grid[x + originX + (y + originY) * 9];
                     input.setItem(x + y * size, stack == null ? ItemStack.EMPTY : stack.copy());
                 }
             }
             if (recipe.matches(input, level)) {
                 ItemStack result = recipe.assemble(input, level.registryAccess());
                 if (!result.isEmpty()) {
-                    return new ExtremeRecipeMatch(result, recipe.getId(), "extendedcrafting");
+                    return new ExtremeRecipeMatch(result, recipe.getId(), "extendedcrafting",
+                            ExtendedCraftingRecipeHelper.mapRemainders(recipe.getRemainingItems(input), size, originX, originY));
                 }
             }
         }

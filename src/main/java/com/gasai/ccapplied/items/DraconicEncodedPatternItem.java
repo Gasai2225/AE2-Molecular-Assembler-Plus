@@ -163,7 +163,7 @@ public class DraconicEncodedPatternItem extends EncodedPatternItem {
                 outStack,
                 tier,
                 totalEnergy,
-                recipeId);
+                recipeId, level);
     }
 
     @Override

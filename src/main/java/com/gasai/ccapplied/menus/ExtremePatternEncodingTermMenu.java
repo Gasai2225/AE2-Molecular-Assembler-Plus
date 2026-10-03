@@ -259,7 +259,7 @@ public class ExtremePatternEncodingTermMenu extends MEStorageMenu implements app
 
     public boolean canEncode() {
         
-        if (this.blankPatternSlot.getItem().isEmpty()) {
+        if (this.blankPatternSlot.getItem().isEmpty() && this.encodedPatternSlot.getItem().isEmpty()) {
             return false;
         }
         

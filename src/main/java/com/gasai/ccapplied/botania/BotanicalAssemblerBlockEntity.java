@@ -29,6 +29,8 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
     private final AppEngInternalInventory inventory = new AppEngInternalInventory(this, 18);
     private ItemStack plan = ItemStack.EMPTY;
     private long reservedMana;
+    private final AppEngInternalInventory jobOutputs = new AppEngInternalInventory(null, 18);
+    private int jobTicks;
     private int progress;
     private boolean visualPowered;
     private final AppEngInternalInventory template = new AppEngInternalInventory(this, 1, 1) {
@@ -70,9 +72,7 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
         if (pattern == null) return false;
         var ingredients = pattern.ingredients();
         if (slot < 0 || slot >= ingredients.size()) return false;
-        return station() == MagicalStation.PURE_DAISY
-                ? pattern.getInputs()[0].isValid(AEItemKey.of(stack), getLevel())
-                : AEItemKey.of(ingredients.get(slot)).equals(AEItemKey.of(stack));
+        return pattern.isItemValid(slot, AEItemKey.of(stack), getLevel());
     }
 
     public InternalInventory menuInputs() {
@@ -118,7 +118,7 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
             }
         }
         var recipe = MagicalRecipeResolver.resolve(getLevel(), station(), pattern.catalyst(), pattern.recipe().recipeId(), actual);
-        if (recipe == null || recipe.outputs().size() > inventory.size()) return false;
+        if (!MagicalRecipeResolver.sameResult(pattern.recipe(), recipe) || recipe.outputs().size() > inventory.size()) return false;
         var storage = getMainNode().getGrid().getStorageService().getInventory();
         var source = new MachineSource(this);
         long cost = recipe.mana();
@@ -135,6 +135,7 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
         for (int i = 0; i < actual.size(); i++) inventory.setItemDirect(i, actual.get(i));
         plan = pattern.getDefinition().toStack();
         reservedMana = cost;
+        rememberResult(recipe);
         progress = 0;
         manualInputs.clear();
         saveChanges();
@@ -208,20 +209,40 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
                 || !(details instanceof MagicalPattern offered) || offered.station() != station()) return false;
         // Decode again: never trust cached outputs or externally supplied pattern implementations.
         var pattern = MagicalPatternItem.readPattern(offered.getDefinition().toStack(), getLevel());
-        if (pattern == null || pattern.station() != station()) return false;
+        if (pattern == null || pattern.station() != station()
+                || !MagicalRecipeResolver.sameResult(offered.recipe(), pattern.recipe())) return false;
         var actual = validateInputs(pattern, table, getLevel());
         if (actual == null) return false;
         var recipe = MagicalRecipeResolver.resolve(getLevel(), station(), pattern.catalyst(), pattern.recipe().recipeId(), actual);
-        if (recipe == null || recipe.mana() != pattern.recipe().mana() || recipe.outputs().size() > inventory.size()) return false;
+        if (!MagicalRecipeResolver.sameResult(pattern.recipe(), recipe) || recipe.outputs().size() > inventory.size()) return false;
         for (int i = 0; i < actual.size(); i++) inventory.setItemDirect(i, actual.get(i));
         plan = pattern.getDefinition().toStack();
         reservedMana = recipe.mana();
+        rememberResult(recipe);
         progress = 0;
         for (var counter : table) counter.clear();
         getMainNode().ifPresent((grid, node) -> grid.getTickManager().alertDevice(node));
         saveChanges();
         return true;
     }
+    private void rememberResult(MagicalRecipeResolver.Result recipe) {
+        jobOutputs.clear();
+        for (int slot = 0; slot < recipe.outputs().size(); slot++) {
+            jobOutputs.setItemDirect(slot, recipe.outputs().get(slot).copy());
+        }
+        jobTicks = recipe.ticks();
+    }
+
+    private boolean matchesJobResult(MagicalRecipeResolver.Result recipe) {
+        if (recipe == null || jobOutputs.isEmpty() || recipe.mana() != reservedMana
+                || recipe.ticks() != jobTicks || recipe.outputs().size() > jobOutputs.size()) return false;
+        for (int slot = 0; slot < jobOutputs.size(); slot++) {
+            var output = slot < recipe.outputs().size() ? recipe.outputs().get(slot) : ItemStack.EMPTY;
+            if (!ItemStack.matches(jobOutputs.getStackInSlot(slot), output)) return false;
+        }
+        return true;
+    }
+
     /** Validate first without mutating CPU input counters; reconstruct ordered recipe inputs afterwards. */
     public static List<ItemStack> validateInputs(MagicalPattern pattern, KeyCounter[] table, Level level) {
         var required = pattern.getInputs();
@@ -240,6 +261,15 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
             if (remaining != 0) return null;
         }
         var actual = new ArrayList<ItemStack>();
+        if (pattern.hasSlotInputs()) {
+            // Each counter belongs to its recipe slot, including the final reagent.
+            for (var counter : table) {
+                var key = counter.getFirstKey(AEItemKey.class);
+                if (key == null) return null;
+                actual.add(key.toStack(1));
+            }
+            return actual;
+        }
         for (var ingredient : pattern.ingredients()) {
             AEItemKey key = AEItemKey.of(ingredient);
             if (pattern.station() == MagicalStation.PURE_DAISY && items.get(key) == 0)
@@ -264,7 +294,7 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
             var actual = new ArrayList<ItemStack>();
             for (var stack : inventory) if (!stack.isEmpty()) actual.add(stack.copy());
             var recipe = MagicalRecipeResolver.resolve(getLevel(), station(), pattern.catalyst(), pattern.recipe().recipeId(), actual);
-            if (recipe == null || recipe.mana() != reservedMana || recipe.outputs().size() > inventory.size())
+            if (!matchesJobResult(recipe))
                 return TickRateModulation.IDLE; // Keep resources recoverable if a datapack changes the recipe.
             int speed = 1 << getInstalledUpgrades(appeng.core.definitions.AEItems.SPEED_CARD);
             // The first scheduler interval includes idle time before the job existed.
@@ -280,6 +310,8 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
                 for (int i = 0; i < recipe.outputs().size(); i++) inventory.setItemDirect(i, recipe.outputs().get(i).copy());
                 plan = ItemStack.EMPTY;
                 reservedMana = 0;
+                jobOutputs.clear();
+                jobTicks = 0;
                 progress = 0;
             }
             saveChanges();
@@ -314,6 +346,7 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
         template.clear();
         manualInputs.clear();
         plan = ItemStack.EMPTY; reservedMana = 0; progress = 0;
+        jobOutputs.clear(); jobTicks = 0;
     }
     @Override public void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
@@ -321,6 +354,8 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
         template.writeToNBT(tag, "botanicalTemplate");
         manualInputs.writeToNBT(tag, "botanicalManualInputs");
         tag.put("botanicalPlan", plan.isEmpty() ? new CompoundTag() : plan.save(new CompoundTag()));
+        jobOutputs.writeToNBT(tag, "botanicalJobOutputs");
+        tag.putInt("botanicalJobTicks", jobTicks);
         tag.putLong("reservedMana", reservedMana);
         tag.putInt("botanicalProgress", progress);
     }
@@ -332,6 +367,9 @@ public final class BotanicalAssemblerBlockEntity extends AENetworkInvBlockEntity
         template.readFromNBT(tag, "botanicalTemplate");
         manualInputs.readFromNBT(tag, "botanicalManualInputs");
         plan = ItemStack.of(tag.getCompound("botanicalPlan"));
+        jobOutputs.clear();
+        jobOutputs.readFromNBT(tag, "botanicalJobOutputs");
+        jobTicks = Math.max(0, tag.getInt("botanicalJobTicks"));
         reservedMana = Math.max(0, tag.getLong("reservedMana"));
         progress = Math.max(0, tag.getInt("botanicalProgress"));
     }

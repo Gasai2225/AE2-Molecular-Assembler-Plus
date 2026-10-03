@@ -99,7 +99,7 @@ public final class MagicalTerminalScreen extends MEStorageScreen<MagicalTerminal
                 .append("\n").append(Component.translatable("gui.ccapplied.magic.cycle_catalyst")));
         setTextContent("catalyst", catalystButton.visible
                 ? Component.translatable("gui.ccapplied.magic.catalyst_label") : Component.empty());
-        substitutions.setVisibility(selected == MagicalStation.PURE_DAISY);
+        substitutions.setVisibility(selected.supportsSubstitutions());
         substitutions.setState(menu.substitutions);
         encode.active = menu.valid;
         encode.setMessage(Component.translatable(menu.valid ? "gui.ccapplied.magic.encode" : "gui.ccapplied.magic.no_recipe"));

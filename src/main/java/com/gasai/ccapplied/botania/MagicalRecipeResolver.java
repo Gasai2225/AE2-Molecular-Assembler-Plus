@@ -95,6 +95,42 @@ public final class MagicalRecipeResolver {
         return new Result(recipeId, outputs, mana, ticks);
     }
 
+    public static List<List<ItemStack>> alternatives(Level level, MagicalStation station,
+            Result expected, List<ItemStack> inputs) {
+        if (station == MagicalStation.PURE_DAISY)
+            return List.of(daisyAlternatives(level, expected, inputs.get(0)));
+        var recipe = level.getRecipeManager().byKey(expected.recipeId()).orElse(null);
+        if (station != MagicalStation.APOTHECARY || !(recipe instanceof PetalApothecaryRecipe petal))
+            return List.of();
+        var result = new ArrayList<List<ItemStack>>();
+        var candidates = new ArrayList<ItemStack>();
+        for (var ingredient : recipe.getIngredients()) candidates.addAll(List.of(ingredient.getItems()));
+        for (int slot = 0; slot < inputs.size(); slot++) {
+            var choices = new ArrayList<ItemStack>();
+            choices.add(inputs.get(slot).copy());
+            var available = slot == inputs.size() - 1 ? List.of(petal.getReagent().getItems()) : candidates;
+            for (var candidate : available) {
+                if (candidate.isEmpty()) continue;
+                var replacement = candidate.copyWithCount(1);
+                if (choices.stream().anyMatch(s -> ItemStack.matches(s, replacement))) continue;
+                var trial = new ArrayList<>(inputs);
+                trial.set(slot, replacement);
+                var resolved = resolve(level, station, PoolCatalyst.NONE, expected.recipeId(), trial);
+                if (sameResult(expected, resolved)) choices.add(replacement);
+            }
+            result.add(List.copyOf(choices));
+        }
+        return List.copyOf(result);
+    }
+
+    public static boolean sameResult(Result expected, Result actual) {
+        if (actual == null || expected.mana() != actual.mana() || expected.ticks() != actual.ticks()
+                || expected.outputs().size() != actual.outputs().size()) return false;
+        for (int i = 0; i < expected.outputs().size(); i++)
+            if (!ItemStack.matches(expected.outputs().get(i), actual.outputs().get(i))) return false;
+        return true;
+    }
+
     /** Only alternatives of the same Daisy recipe with identical output are safe substitutions. */
     public static List<ItemStack> daisyAlternatives(Level level, Result expected, ItemStack primary) {
         var result = new ArrayList<ItemStack>();

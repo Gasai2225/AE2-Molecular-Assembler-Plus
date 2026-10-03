@@ -13,5 +13,6 @@ public record DraconicFusionRecipeMatch(
         List<ItemStack> ingredients,
         DraconicFusionPattern.FusionTier tier,
         long totalEnergy,
-        @Nullable ResourceLocation recipeId) {
+        @Nullable ResourceLocation recipeId,
+        List<Boolean> consumedIngredients) {
 }

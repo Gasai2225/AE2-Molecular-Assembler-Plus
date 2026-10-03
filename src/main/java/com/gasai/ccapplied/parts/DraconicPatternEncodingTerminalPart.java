@@ -30,6 +30,11 @@ public class DraconicPatternEncodingTerminalPart extends AbstractTerminalPart im
 
     private final ExtremePatternEncodingLogic logic = new ExtremePatternEncodingLogic(this);
 
+    @Override
+    public int maxEncodedInputAmount(int slot) {
+        return slot == com.gasai.ccapplied.patterns.DraconicFusionPattern.OUTER_SLOTS ? 64 : 1;
+    }
+
     public DraconicPatternEncodingTerminalPart(IPartItem<?> partItem) {
         super(partItem);
     }

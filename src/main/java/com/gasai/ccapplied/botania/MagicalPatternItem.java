@@ -24,7 +24,8 @@ public final class MagicalPatternItem extends appeng.crafting.pattern.EncodedPat
     @Override public void appendHoverText(ItemStack stack, Level level, List<net.minecraft.network.chat.Component> lines,
             net.minecraft.world.item.TooltipFlag flags) {
         if (isEncoded(stack)) super.appendHoverText(stack, level, lines, flags);
-        if (isEncoded(stack) && data(stack).getString("station").equals(MagicalStation.PURE_DAISY.id())) {
+        if (isEncoded(stack) && (data(stack).getString("station").equals(MagicalStation.PURE_DAISY.id())
+                || data(stack).getString("station").equals(MagicalStation.APOTHECARY.id()))) {
             lines.add(net.minecraft.network.chat.Component.translatable("gui.ccapplied.magic.substitutions").append(" ")
                     .append((data(stack).getBoolean("substitutions") ? appeng.core.localization.GuiText.Yes
                             : appeng.core.localization.GuiText.No).text()));
@@ -96,7 +97,7 @@ public final class MagicalPatternItem extends appeng.crafting.pattern.EncodedPat
         root.putString("station", station.id());
         root.putString("catalyst", catalyst.id());
         root.putString("recipe", recipeId.toString());
-        root.putBoolean("substitutions", station == MagicalStation.PURE_DAISY && substitutions);
+        root.putBoolean("substitutions", station.supportsSubstitutions() && substitutions);
         var list = new ListTag();
         for (var input : inputs) list.add(input.save(new CompoundTag()));
         root.put("inputs", list);
@@ -122,8 +123,8 @@ public final class MagicalPatternItem extends appeng.crafting.pattern.EncodedPat
             for (int i = 0; i < list.size(); i++) inputs.add(ItemStack.of(list.getCompound(i)));
             var recipe = MagicalRecipeResolver.resolve(level, station, catalyst, id, inputs);
             if (recipe == null) return null;
-            var alternatives = station == MagicalStation.PURE_DAISY && root.getBoolean("substitutions")
-                    ? MagicalRecipeResolver.daisyAlternatives(level, recipe, inputs.get(0)) : List.<ItemStack>of();
+            var alternatives = station.supportsSubstitutions() && root.getBoolean("substitutions")
+                    ? MagicalRecipeResolver.alternatives(level, station, recipe, inputs) : List.<List<ItemStack>>of();
             return new MagicalPattern(stack, station, catalyst, inputs, recipe, alternatives);
         } catch (IllegalArgumentException exception) {
             return null;

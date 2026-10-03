@@ -406,6 +406,61 @@ public final class BotanicalAssemblerTests {
             helper.succeed();
         });
     }
+
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void changedRecipeCannotReplacePromisedOutput(GameTestHelper helper) {
+        if (!CCOptionalMods.isBotaniaLoaded()) { helper.succeed(); return; }
+        var pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, BotanicalAssemblers.ENTRIES.get(MagicalStation.POOL).block().get());
+        helper.setBlock(new BlockPos(0, 1, 1), appeng.core.definitions.AEBlocks.CREATIVE_ENERGY_CELL.block());
+        helper.runAfterDelay(60, () -> {
+            var machine = (BotanicalAssemblerBlockEntity) helper.getBlockEntity(pos);
+            var inputs = List.of(new ItemStack(Items.IRON_INGOT));
+            var recipe = MagicalRecipeResolver.find(helper.getLevel(), MagicalStation.POOL, PoolCatalyst.NONE, inputs);
+            var pattern = MagicalPatternItem.readPattern(MagicalPatternItem.encode(helper.getLevel(),
+                    MagicalStation.POOL, PoolCatalyst.NONE, recipe.recipeId(), inputs), helper.getLevel());
+            var manager = helper.getLevel().getRecipeManager();
+            var original = new java.util.ArrayList<>(manager.getRecipes());
+            var nativeRecipe = (vazkii.botania.api.recipe.ManaInfusionRecipe) manager.byKey(recipe.recipeId()).orElseThrow();
+            var changedOutput = recipe.outputs().get(0).copyWithCount(recipe.outputs().get(0).getCount() + 1);
+            var changed = new vazkii.botania.common.crafting.ManaInfusionRecipe(recipe.recipeId(), changedOutput,
+                    net.minecraft.world.item.crafting.Ingredient.of(Items.IRON_INGOT), (int) recipe.mana(), "",
+                    nativeRecipe.getRecipeCatalyst());
+            var modified = new java.util.ArrayList<>(original);
+            modified.removeIf(entry -> entry.getId().equals(recipe.recipeId()));
+            modified.add(changed);
+            try {
+                manager.replaceRecipes(modified);
+                var offered = table(pattern);
+                helper.assertTrue(!machine.pushPattern(pattern, offered, Direction.WEST)
+                        && !offered[0].isEmpty(), "Stale CPU plan accepted or its inputs consumed");
+                manager.replaceRecipes(original);
+                helper.assertTrue(machine.pushPattern(pattern, table(pattern), Direction.WEST), "Valid job rejected");
+                machine.tickingRequest(machine.getMainNode().getNode(), 1);
+                manager.replaceRecipes(modified);
+                var saved = new net.minecraft.nbt.CompoundTag();
+                machine.saveAdditional(saved);
+                machine.loadTag(saved);
+                machine.tickingRequest(machine.getMainNode().getNode(), 200);
+                helper.assertTrue(!machine.activePattern().isEmpty()
+                        && machine.getInternalInventory().getStackInSlot(0).is(Items.IRON_INGOT)
+                        && machine.reservedMana() == recipe.mana(), "Reloaded job crafted changed output or lost resources");
+                var drops = new java.util.ArrayList<ItemStack>();
+                machine.addAdditionalDrops(helper.getLevel(), helper.absolutePos(pos), drops);
+                helper.assertTrue(drops.stream().noneMatch(stack -> stack.is(changedOutput.getItem())),
+                        "Promised output snapshot became a physical item");
+                manager.replaceRecipes(original);
+                machine.tickingRequest(machine.getMainNode().getNode(), 200);
+                helper.assertTrue(machine.activePattern().isEmpty()
+                        && ItemStack.matches(machine.getInternalInventory().getStackInSlot(0), recipe.outputs().get(0)),
+                        "Restoring recipe did not resume the original job");
+                helper.succeed();
+            } finally {
+                manager.replaceRecipes(original);
+            }
+        });
+    }
+
     private static KeyCounter[] table(MagicalPattern pattern) {
         var inputs = pattern.getInputs();
         var result = new KeyCounter[inputs.length];

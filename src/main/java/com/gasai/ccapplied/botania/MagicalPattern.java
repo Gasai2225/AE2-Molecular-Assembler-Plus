@@ -16,13 +16,14 @@ public final class MagicalPattern implements IPatternDetails {
     private final MagicalRecipeResolver.Result recipe;
     private final IInput[] inputs;
     private final GenericStack[] outputs;
+    private final boolean slotInputs;
 
     public MagicalPattern(ItemStack encoded, MagicalStation station, PoolCatalyst catalyst,
             List<ItemStack> ingredients, MagicalRecipeResolver.Result recipe) {
         this(encoded, station, catalyst, ingredients, recipe, List.of());
     }
     public MagicalPattern(ItemStack encoded, MagicalStation station, PoolCatalyst catalyst,
-            List<ItemStack> ingredients, MagicalRecipeResolver.Result recipe, List<ItemStack> alternatives) {
+            List<ItemStack> ingredients, MagicalRecipeResolver.Result recipe, List<List<ItemStack>> alternatives) {
         this.definition = AEItemKey.of(encoded);
         this.station = station;
         this.catalyst = catalyst;
@@ -30,10 +31,15 @@ public final class MagicalPattern implements IPatternDetails {
         this.recipe = recipe;
         var required = count(ingredients);
         if (recipe.mana() > 0) required.put(ManaKey.INSTANCE, recipe.mana());
-        inputs = required.entrySet().stream().map(entry -> new ExactInput(entry.getKey(), entry.getValue()))
-                .toArray(IInput[]::new);
-        if (station == MagicalStation.PURE_DAISY && ingredients.size() == 1 && !alternatives.isEmpty())
-            inputs[0] = new AlternativeInput(alternatives.stream().map(AEItemKey::of).distinct().toList());
+        slotInputs = station.supportsSubstitutions() && alternatives.size() == ingredients.size();
+        if (slotInputs) {
+            // Keep repeated ingredients separate so one craft can mix different valid alternatives.
+            inputs = alternatives.stream().map(choices -> new AlternativeInput(
+                    choices.stream().map(AEItemKey::of).distinct().toList())).toArray(IInput[]::new);
+        } else {
+            inputs = required.entrySet().stream().map(entry -> new ExactInput(entry.getKey(), entry.getValue()))
+                    .toArray(IInput[]::new);
+        }
         outputs = count(recipe.outputs()).entrySet().stream().map(e -> new GenericStack(e.getKey(), e.getValue()))
                 .toArray(GenericStack[]::new);
     }
@@ -46,6 +52,11 @@ public final class MagicalPattern implements IPatternDetails {
     public PoolCatalyst catalyst() { return catalyst; }
     public List<ItemStack> ingredients() { return ingredients.stream().map(ItemStack::copy).toList(); }
     public MagicalRecipeResolver.Result recipe() { return recipe; }
+    public boolean hasSlotInputs() { return slotInputs; }
+    public boolean isItemValid(int slot, AEItemKey key, Level level) {
+        return slot >= 0 && slot < ingredients.size() && (slotInputs
+                ? inputs[slot].isValid(key, level) : AEItemKey.of(ingredients.get(slot)).equals(key));
+    }
     @Override public AEItemKey getDefinition() { return definition; }
     @Override public IInput[] getInputs() { return inputs; }
     @Override public GenericStack[] getOutputs() { return outputs; }

@@ -75,35 +75,37 @@ public final class RegressionTests {
 
     @GameTest(template = "empty")
     public static void rejectedPushKeepsInputs(GameTestHelper helper) {
-        var pos = new BlockPos(1, 1, 1);
-        helper.setBlock(pos, CCBlocks.EXTREME_MOLECULAR_ASSEMBLER.get());
-        var assembler = (ExtremeMolecularAssemblerTileEntity) helper.getBlockEntity(pos);
-        var pattern = PatternDetailsHelper.decodePattern(encodedIronPattern(helper), helper.getLevel());
-        var key = AEItemKey.of(Items.IRON_INGOT);
-        var wrong = new KeyCounter();
-        wrong.add(AEItemKey.of(Items.GOLD_INGOT), 1);
-        helper.assertTrue(!assembler.pushPattern(pattern, new KeyCounter[] {wrong}, Direction.NORTH),
-                "Wrong ingredients accepted");
-        helper.assertTrue(wrong.get(AEItemKey.of(Items.GOLD_INGOT)) == 1, "Rejected input was lost");
-        helper.assertTrue(assembler.getInternalInventory().isEmpty(), "Rejected push changed the inventory");
+        RecipeReloadTests.withIronRecipe(helper, () -> {
+            var pos = new BlockPos(1, 1, 1);
+            helper.setBlock(pos, CCBlocks.EXTREME_MOLECULAR_ASSEMBLER.get());
+            var assembler = (ExtremeMolecularAssemblerTileEntity) helper.getBlockEntity(pos);
+            var pattern = PatternDetailsHelper.decodePattern(encodedIronPattern(helper), helper.getLevel());
+            var key = AEItemKey.of(Items.IRON_INGOT);
+            var wrong = new KeyCounter();
+            wrong.add(AEItemKey.of(Items.GOLD_INGOT), 1);
+            helper.assertTrue(!assembler.pushPattern(pattern, new KeyCounter[] {wrong}, Direction.NORTH),
+                    "Wrong ingredients accepted");
+            helper.assertTrue(wrong.get(AEItemKey.of(Items.GOLD_INGOT)) == 1, "Rejected input was lost");
+            helper.assertTrue(assembler.getInternalInventory().isEmpty(), "Rejected push changed the inventory");
 
-        var excess = new KeyCounter();
-        excess.add(key, 2);
-        helper.assertTrue(!assembler.pushPattern(pattern, new KeyCounter[] {excess}, Direction.NORTH),
-                "Excess ingredients accepted");
-        helper.assertTrue(excess.get(key) == 2, "Excess input was discarded");
+            var excess = new KeyCounter();
+            excess.add(key, 2);
+            helper.assertTrue(!assembler.pushPattern(pattern, new KeyCounter[] {excess}, Direction.NORTH),
+                    "Excess ingredients accepted");
+            helper.assertTrue(excess.get(key) == 2, "Excess input was discarded");
 
-        var valid = new KeyCounter();
-        valid.add(AEItemKey.of(Items.GOLD_INGOT), 0);
-        valid.add(key, 1);
-        helper.assertTrue(assembler.pushPattern(pattern, new KeyCounter[] {valid}, Direction.NORTH),
-                "Valid ingredients rejected");
-        helper.assertTrue(valid.isEmpty(), "Accepted input was not consumed");
-        helper.assertTrue(assembler.getInternalInventory().getStackInSlot(0).is(Items.IRON_INGOT),
-                "Accepted input did not reach the grid");
-        var saved = assembler.saveWithFullMetadata();
-        helper.assertTrue(saved.contains("myPlan"), "In-flight crafting plan was not saved");
-        helper.succeed();
+            var valid = new KeyCounter();
+            valid.add(AEItemKey.of(Items.GOLD_INGOT), 0);
+            valid.add(key, 1);
+            helper.assertTrue(assembler.pushPattern(pattern, new KeyCounter[] {valid}, Direction.NORTH),
+                    "Valid ingredients rejected");
+            helper.assertTrue(valid.isEmpty(), "Accepted input was not consumed");
+            helper.assertTrue(assembler.getInternalInventory().getStackInSlot(0).is(Items.IRON_INGOT),
+                    "Accepted input did not reach the grid");
+            var saved = assembler.saveWithFullMetadata();
+            helper.assertTrue(saved.contains("myPlan"), "In-flight crafting plan was not saved");
+            helper.succeed();
+        });
     }
 
     @GameTest(template = "empty")
@@ -180,10 +182,10 @@ public final class RegressionTests {
         helper.succeed();
     }
 
-    private static ItemStack encodedIronPattern(GameTestHelper helper) {
+    static ItemStack encodedIronPattern(GameTestHelper helper) {
         GenericStack[] inputs = new GenericStack[ExtremeCraftingPattern.SLOTS];
         inputs[0] = new GenericStack(AEItemKey.of(Items.IRON_INGOT), 1);
         return ((ExtremeEncodedPatternItem) CCItems.EXTREME_CRAFTING_PATTERN.get()).encode(
-                inputs, new GenericStack(AEItemKey.of(Items.GOLD_INGOT), 1), null);
+                inputs, new GenericStack(AEItemKey.of(Items.GOLD_INGOT), 1), RecipeReloadTests.IRON_ID);
     }
 }

@@ -77,10 +77,10 @@ public class DraconicPatternEncodingTermMenu extends MEStorageMenu {
             this.addSlot(slot, OUTER_SLOT_SEMANTICS[i]);
         }
         this.catalystSlot = new FakeSlot(craftingMatrix, CENTER_SLOT);
-        this.catalystSlot.setHideAmount(true);
+        this.catalystSlot.setHideAmount(false);
         this.addSlot(this.catalystSlot, CATALYST_SLOT_SEMANTIC);
         this.resultPreviewSlot = new PreviewOnlySlot(resultPreviewInv, 0);
-        this.resultPreviewSlot.setHideAmount(true);
+        this.resultPreviewSlot.setHideAmount(false);
         this.addSlot(this.resultPreviewSlot, SlotSemantics.CRAFTING_RESULT);
 
         this.blankPatternSlot = this.addSlot(new DraconicBlankPatternSlot(logic.getBlankPatternInv(), 0), SlotSemantics.BLANK_PATTERN);
@@ -127,7 +127,7 @@ public class DraconicPatternEncodingTermMenu extends MEStorageMenu {
         if (centerKey == null || outKey == null) {
             return;
         }
-        inputs[OUTER_SLOTS] = new appeng.api.stacks.GenericStack(centerKey, 1);
+        inputs[OUTER_SLOTS] = new appeng.api.stacks.GenericStack(centerKey, Math.max(1, center.getCount()));
         var output = new appeng.api.stacks.GenericStack(outKey, Math.max(1, match.result().getCount()));
         logic.encodeDraconicPattern(inputs, output, match.tier(), match.totalEnergy(), match.recipeId());
     }
@@ -146,7 +146,7 @@ public class DraconicPatternEncodingTermMenu extends MEStorageMenu {
     }
 
     public boolean canEncode() {
-        if (blankPatternSlot.getItem().isEmpty()) {
+        if (blankPatternSlot.getItem().isEmpty() && encodedPatternSlot.getItem().isEmpty()) {
             return false;
         }
         return findFusionRecipe() != null;
@@ -155,12 +155,6 @@ public class DraconicPatternEncodingTermMenu extends MEStorageMenu {
     private DraconicFusionRecipeMatch findFusionRecipe() {
         if (getPlayer() == null || getPlayer().level() == null) {
             clearRecipePreview();
-            return null;
-        }
-        if (blankPatternSlot.getItem().isEmpty()) {
-            clearRecipePreview();
-            logic.setRecipeId(null);
-            logic.saveDraconicMatrix(craftingMatrix, ItemStack.EMPTY);
             return null;
         }
         var center = craftingMatrix.getStackInSlot(CENTER_SLOT);
