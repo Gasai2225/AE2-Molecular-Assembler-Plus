@@ -29,9 +29,9 @@ public final class MagicalTerminalPart extends AbstractTerminalPart implements I
     @Override public IPartModel getStaticModels() { return isActive() ? ACTIVE : isPowered() ? ON : OFF; }
     public MagicalStation station() { return station; }
     public PoolCatalyst catalyst() { return catalyst; }
-    public boolean substitutions() { return station == MagicalStation.PURE_DAISY && substitutions; }
+    public boolean substitutions() { return station.supportsSubstitutions() && substitutions; }
     public void setSubstitutions(boolean enabled) {
-        substitutions = station == MagicalStation.PURE_DAISY && enabled;
+        substitutions = station.supportsSubstitutions() && enabled;
         changed();
     }
     public int revision() { return revision; }
@@ -89,7 +89,7 @@ public final class MagicalTerminalPart extends AbstractTerminalPart implements I
             station = MagicalStation.POOL;
             catalyst = PoolCatalyst.NONE;
         }
-        substitutions = station == MagicalStation.PURE_DAISY && tag.getBoolean("magicSubstitutions");
+        substitutions = station.supportsSubstitutions() && tag.getBoolean("magicSubstitutions");
         revision++;
     }
     @Override public void addAdditionalDrops(List<ItemStack> drops, boolean wrenched) {

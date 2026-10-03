@@ -257,8 +257,9 @@ public class ExtremePatternEncodingLogic implements InternalInventoryHost {
                 continue;
             }
 
-            if (stack.amount() != 1) {
-                grid.setStack(slot, new GenericStack(stack.what(), 1));
+            long amount = Math.max(1, Math.min(stack.amount(), host.maxEncodedInputAmount(slot)));
+            if (stack.amount() != amount) {
+                grid.setStack(slot, new GenericStack(stack.what(), amount));
             }
         }
 
@@ -401,8 +402,9 @@ public class ExtremePatternEncodingLogic implements InternalInventoryHost {
 
     public void loadDraconicMatrixInto(InternalInventory craftingMatrix) {
         for (int i = 0; i < Math.min(DraconicFusionPattern.TOTAL_INPUT_SLOTS, craftingMatrix.size()); i++) {
-            craftingMatrix.extractItem(i, Integer.MAX_VALUE, false);
+            // The menu wrapper may refer to this same inventory.
             var gs = encodedInputInv.getStack(i);
+            craftingMatrix.extractItem(i, Integer.MAX_VALUE, false);
             if (gs == null || !(gs.what() instanceof AEItemKey key)) {
                 continue;
             }

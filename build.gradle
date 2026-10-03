@@ -10,7 +10,7 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = mod_id
+    archivesName = mod_name
 }
 
 // Minecraft 1.21.1 requires Java 21.
@@ -133,6 +133,8 @@ tasks.withType(ProcessResources).configureEach {
 }
 
 tasks.named('jar', Jar).configure {
+    archiveClassifier = "neoforge-${minecraft_version}"
+
     manifest {
         attributes([
                 'Specification-Title'     : mod_id,

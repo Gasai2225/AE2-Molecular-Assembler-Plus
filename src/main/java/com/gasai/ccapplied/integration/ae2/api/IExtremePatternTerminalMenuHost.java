@@ -9,4 +9,6 @@ public interface IExtremePatternTerminalMenuHost extends ITerminalHost {
     ExtremePatternEncodingLogic getLogic();
     Level getLevel();
     void markForSave();
+
+    default int maxEncodedInputAmount(int slot) { return 1; }
 }

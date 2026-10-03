@@ -17,13 +17,16 @@ public class DraconicPatternEncodingTermScreen extends MEStorageScreen<DraconicP
         widgets.add("draconicEncodePattern", new DraconicEncodeButton(menu));
         var clear = new DraconicClearButton(menu);
         clear.setHalfSize(true);
+        clear.setDisableBackground(true);
         widgets.add("draconicClearPattern", clear);
     }
 
     @Override
     protected void updateBeforeRender() {
-        setTextContent("draconic_tier_label", Component.literal("Tier: " + menu.getTierText()).withStyle(getTierColor()));
-        setTextContent("draconic_energy_label", Component.literal("Energy Cost: " + NumberFormat.getIntegerInstance(Locale.US).format(menu.getEnergyCost()) + " OP"));
+        setTextContent("draconic_tier_label", Component.translatable("gui.ccapplied.draconic_tier_label",
+                menu.getTierText()).withStyle(getTierColor()));
+        setTextContent("draconic_energy_label", Component.translatable("gui.ccapplied.draconic_energy_label",
+                NumberFormat.getIntegerInstance(Locale.US).format(menu.getEnergyCost())));
         super.updateBeforeRender();
     }
 
@@ -58,7 +61,7 @@ public class DraconicPatternEncodingTermScreen extends MEStorageScreen<DraconicP
         }
         @Override
         protected appeng.client.gui.Icon getIcon() {
-            return appeng.client.gui.Icon.CLEAR;
+            return appeng.client.gui.Icon.S_CLEAR;
         }
     }
 }

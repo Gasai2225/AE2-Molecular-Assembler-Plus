@@ -40,18 +40,23 @@ public class ExtendedCraftingRecipeHelper {
     }
 
     public static @Nullable ExtremeRecipeMatch findAnyRecipe(ItemStack[] craftingGrid, Level level) {
+        return findRecipe(craftingGrid, level, null);
+    }
+
+    public static @Nullable ExtremeRecipeMatch findRecipe(ItemStack[] craftingGrid, Level level,
+            @Nullable ResourceLocation recipeId) {
         if (level == null || craftingGrid == null || craftingGrid.length != 81 || isEmptyGrid(craftingGrid)) {
             return null;
         }
 
         if (ModList.get().isLoaded("extendedcrafting")) {
-            ExtremeRecipeMatch extendedCraftingRecipe = ExtendedCraftingCompat.findRecipe(craftingGrid, level);
+            ExtremeRecipeMatch extendedCraftingRecipe = ExtendedCraftingCompat.findRecipe(craftingGrid, level, recipeId);
             if (extendedCraftingRecipe != null) {
                 return extendedCraftingRecipe;
             }
         }
 
-        return findGenericExtremeRecipe(craftingGrid, level);
+        return findGenericExtremeRecipe(craftingGrid, level, recipeId);
     }
 
     public static @Nullable ItemStack getRecipePreview(ItemStack[] craftingGrid, Level level) {
@@ -67,11 +72,13 @@ public class ExtendedCraftingRecipeHelper {
         return isSupportedGenericExtremeRecipeType(typeId);
     }
 
-    private static @Nullable ExtremeRecipeMatch findGenericExtremeRecipe(ItemStack[] craftingGrid, Level level) {
-        var container = toCraftingInput(craftingGrid);
+    private static @Nullable ExtremeRecipeMatch findGenericExtremeRecipe(ItemStack[] craftingGrid, Level level, @Nullable ResourceLocation recipeId) {
+        var positioned = toCraftingInput(craftingGrid);
+        var container = positioned.input();
 
         try {
             for (var recipe : level.getRecipeManager().getRecipes()) {
+                if (recipeId != null && !recipeId.equals(recipe.id())) continue;
                 ResourceLocation typeId = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.value().getType());
                 if (!isSupportedGenericExtremeRecipeType(typeId)) {
                     continue;
@@ -80,7 +87,9 @@ public class ExtendedCraftingRecipeHelper {
                 if (matchesRecipe(recipe, container, level)) {
                     ItemStack result = getRecipeResult(recipe, container, level);
                     if (!result.isEmpty()) {
-                        return new ExtremeRecipeMatch(result, recipe.id(), typeId.getNamespace());
+                        return new ExtremeRecipeMatch(result, recipe.id(), typeId.getNamespace(),
+                                mapRemainders(getRemainingItems(recipe.value(), container),
+                                        container.width(), positioned.left(), positioned.top()));
                     }
                 }
             }
@@ -116,13 +125,13 @@ public class ExtendedCraftingRecipeHelper {
         return true;
     }
 
-    private static CraftingInput toCraftingInput(ItemStack[] craftingGrid) {
+    private static CraftingInput.Positioned toCraftingInput(ItemStack[] craftingGrid) {
         java.util.List<ItemStack> items = new java.util.ArrayList<>(81);
         for (int i = 0; i < 81; i++) {
             ItemStack stack = i < craftingGrid.length && craftingGrid[i] != null ? craftingGrid[i] : ItemStack.EMPTY;
             items.add(stack.copy());
         }
-        return CraftingInput.of(9, 9, items);
+        return CraftingInput.ofPositioned(9, 9, items);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -145,10 +154,21 @@ public class ExtendedCraftingRecipeHelper {
         } catch (Exception ignored) {
         }
 
-        try {
-            return recipe.getResultItem(level.registryAccess()).copy();
-        } catch (Exception e) {
-            return ItemStack.EMPTY;
+        return ItemStack.EMPTY;
+    }
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static java.util.List<ItemStack> getRemainingItems(Recipe recipe,
+            CraftingInput input) {
+        return recipe.getRemainingItems(input);
+    }
+
+    static java.util.List<ItemStack> mapRemainders(java.util.List<ItemStack> nativeItems,
+            int width, int left, int top) {
+        var mapped = net.minecraft.core.NonNullList.withSize(81, ItemStack.EMPTY);
+        for (int slot = 0; slot < nativeItems.size(); slot++) {
+            var stack = nativeItems.get(slot);
+            if (!stack.isEmpty()) mapped.set(left + slot % width + (top + slot / width) * 9, stack.copy());
         }
+        return mapped;
     }
 }

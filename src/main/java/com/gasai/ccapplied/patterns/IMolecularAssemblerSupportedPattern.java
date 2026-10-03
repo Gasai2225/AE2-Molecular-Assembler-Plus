@@ -1,6 +1,5 @@
 package com.gasai.ccapplied.patterns;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -30,5 +29,5 @@ public interface IMolecularAssemblerSupportedPattern extends IPatternDetails {
         void set(int slot, ItemStack stack);
     }
 
-    NonNullList<ItemStack> getRemainingItems(CraftingContainer container);
+    CraftingRemainders getRemainingItems(CraftingContainer container);
 }

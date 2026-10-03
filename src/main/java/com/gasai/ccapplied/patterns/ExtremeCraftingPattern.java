@@ -1,6 +1,5 @@
 package com.gasai.ccapplied.patterns;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -28,6 +27,7 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     private final ItemStack[] inputStacks;
     private final ItemStack outputStack;
     private final boolean shaped;
+    private final Level level;
     private final int width;
     private final int height;
     @Nullable
@@ -35,9 +35,8 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     
     public ExtremeCraftingPattern(AEItemKey definition, GenericStack[] sparseInputs, GenericStack[] sparseOutputs,
                                 ItemStack[] inputs, ItemStack output, boolean shaped, int width, int height,
-                                @Nullable net.minecraft.resources.ResourceLocation recipeId) {
+                                @Nullable net.minecraft.resources.ResourceLocation recipeId, Level level) {
         this.definition = java.util.Objects.requireNonNull(definition);
-        this.inputs = createInputs(sparseInputs);
         this.outputs = sparseOutputs;
         this.inputStacks = inputs;
         this.outputStack = output;
@@ -45,6 +44,8 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
         this.width = width;
         this.height = height;
         this.recipeId = recipeId;
+        this.level = level;
+        this.inputs = createInputs(sparseInputs);
     }
     
 
@@ -76,7 +77,9 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
     private IInput[] createInputs(GenericStack[] sparseInputs) {
         java.util.List<IInput> inputsList = new java.util.ArrayList<>();
         
-        for (GenericStack stack : sparseInputs) {
+        for (int slot = 0; slot < sparseInputs.length; slot++) {
+            GenericStack stack = sparseInputs[slot];
+            int inputSlot = slot;
             if (stack != null && stack.what() instanceof AEItemKey) {
                 inputsList.add(new IInput() {
                     @Override
@@ -99,7 +102,8 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
 
                     @Override
                     public @Nullable AEKey getRemainingKey(AEKey template) {
-                        return template instanceof AEItemKey item ? AEItemKey.of(item.toStack().getCraftingRemainingItem()) : null;
+                        var match = com.gasai.ccapplied.crafting.ExtendedCraftingRecipeHelper.findRecipe(inputStacks, level, recipeId);
+                        return match == null ? null : AEItemKey.of(match.remainingItems().get(inputSlot));
                     }
                 });
             }
@@ -166,24 +170,27 @@ public class ExtremeCraftingPattern implements IPatternDetails, IMolecularAssemb
             }
         }
         
-        return outputStack.copy();
+        var grid = new ItemStack[SLOTS];
+        for (int slot = 0; slot < SLOTS; slot++) {
+            var expected = slot < inputStacks.length ? inputStacks[slot] : ItemStack.EMPTY;
+            if (expected.isEmpty() && !container.getItem(slot).isEmpty()) return ItemStack.EMPTY;
+            grid[slot] = expected.isEmpty() ? ItemStack.EMPTY : container.getItem(slot).copyWithCount(expected.getCount());
+        }
+        var match = com.gasai.ccapplied.crafting.ExtendedCraftingRecipeHelper.findRecipe(grid, level, recipeId);
+        return match != null && ItemStack.matches(outputStack, match.result()) ? match.result().copy() : ItemStack.EMPTY;
     }
     
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
-        var remaining = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
-        for (int slot = 0; slot < container.getContainerSize(); slot++) {
-            ItemStack actual = container.getItem(slot);
-            ItemStack expected = slot < inputStacks.length ? inputStacks[slot] : ItemStack.EMPTY;
-            if (expected.isEmpty()) {
-                remaining.set(slot, actual.copy());
-            } else if (actual.getCount() > expected.getCount()) {
-                remaining.set(slot, actual.copyWithCount(actual.getCount() - expected.getCount()));
-            } else {
-                remaining.set(slot, actual.getCraftingRemainingItem());
-            }
+    public CraftingRemainders getRemainingItems(CraftingContainer container) {
+        int[] consumed = new int[inputStacks.length];
+        for (int slot = 0; slot < consumed.length; slot++) consumed[slot] = inputStacks[slot].getCount();
+        var grid = new ItemStack[SLOTS];
+        for (int slot = 0; slot < grid.length; slot++) {
+            grid[slot] = consumed[slot] == 0 ? ItemStack.EMPTY : container.getItem(slot).copyWithCount(consumed[slot]);
         }
-        return remaining;
+        var match = com.gasai.ccapplied.crafting.ExtendedCraftingRecipeHelper.findRecipe(grid, level, recipeId);
+        if (match == null) throw new IllegalStateException("Crafting recipe is no longer available");
+        return CraftingRemainders.collect(container, consumed, match.remainingItems());
     }
 
     @Override

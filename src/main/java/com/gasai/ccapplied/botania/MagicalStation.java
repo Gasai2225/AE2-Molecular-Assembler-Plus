@@ -6,6 +6,7 @@ public enum MagicalStation {
     private final String id;
     MagicalStation(String id) { this.id = id; }
     public String id() { return id; }
+    public boolean supportsSubstitutions() { return this == PURE_DAISY || this == APOTHECARY; }
     public int inputSlots() {
         return switch (this) {
             case POOL, PURE_DAISY -> 1;

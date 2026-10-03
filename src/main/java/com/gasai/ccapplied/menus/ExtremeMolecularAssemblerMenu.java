@@ -126,7 +126,8 @@ public class ExtremeMolecularAssemblerMenu extends UpgradeableMenu<ExtremeMolecu
         @Override
         protected boolean getCurrentValidationState() {
             ItemStack stack = getItem();
-            return stack.isEmpty() || mayPlace(stack);
+            // CPU jobs have no installed pattern on the client; their occupied slots are still valid.
+            return stack.isEmpty() || mac.getHost().getCurrentPattern() == null || mayPlace(stack);
         }
 
         @Override

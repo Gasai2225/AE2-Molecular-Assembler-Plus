@@ -109,23 +109,13 @@
       "left": 173,
       "bottom": 190,
       "width": 16,
-      "height": 16,
-      "texture": "guis/pattern_encoding_terminal.png",
-      "textureWidth": 256,
-      "textureHeight": 256,
-      "srcRect": [240, 0, 16, 16],
-      "hoverSrcRect": [240, 16, 16, 16]
+      "height": 16
     },
     "draconicClearPattern": {
       "left": 173,
       "bottom": 130,
-      "width": 20,
-      "height": 20,
-      "texture": "guis/pattern_encoding_terminal.png",
-      "textureWidth": 256,
-      "textureHeight": 256,
-      "srcRect": [224, 0, 16, 16],
-      "hoverSrcRect": [224, 16, 16, 16]
+      "width": 8,
+      "height": 8
     }
   }
 }

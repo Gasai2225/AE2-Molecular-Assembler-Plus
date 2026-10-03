@@ -80,10 +80,10 @@ public class DraconicPatternEncodingTermMenu extends MEStorageMenu {
             this.addSlot(slot, OUTER_SLOT_SEMANTICS[i]);
         }
         this.catalystSlot = new FakeSlot(inputsWrapper, CENTER_SLOT);
-        this.catalystSlot.setHideAmount(true);
+        this.catalystSlot.setHideAmount(false);
         this.addSlot(this.catalystSlot, CATALYST_SLOT_SEMANTIC);
         this.resultPreviewSlot = new PreviewOnlySlot(resultPreviewInv, 0);
-        this.resultPreviewSlot.setHideAmount(true);
+        this.resultPreviewSlot.setHideAmount(false);
         this.addSlot(this.resultPreviewSlot, SlotSemantics.CRAFTING_RESULT);
 
         this.blankPatternSlot = this.addSlot(new DraconicBlankPatternSlot(logic.getBlankPatternInv(), 0), SlotSemantics.BLANK_PATTERN);

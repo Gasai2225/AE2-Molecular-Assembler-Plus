@@ -3,14 +3,12 @@ package com.gasai.ccapplied.crafting;
 import com.gasai.ccapplied.patterns.DraconicFusionPattern;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Method;
+import com.brandon3055.draconicevolution.api.crafting.IFusionRecipe;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +17,24 @@ public final class DraconicFusionRecipeHelper {
             ResourceLocation.fromNamespaceAndPath("draconicevolution", "fusion_crafting");
 
     private DraconicFusionRecipeHelper() {
+    }
+
+    /** Keep AE2's promised output key stable; native assembly creates a fresh settings-provider UUID. */
+    public static ItemStack withOutputIdentity(ItemStack result, ItemStack template) {
+        var identity = com.brandon3055.draconicevolution.init.ItemData.PROVIDER_IDENTITY.get();
+        if (result.has(identity)) result.set(identity, template.getOrDefault(identity, new java.util.UUID(0, 0)));
+        return result;
+    }
+
+    public static @Nullable DraconicFusionRecipeMatch matchRecipe(ResourceLocation id, ItemStack[] inputs, Level level) {
+        if (id == null || level == null || inputs.length != DraconicFusionPattern.TOTAL_INPUT_SLOTS) return null;
+        var recipe = level.getRecipeManager().byKey(id).orElse(null);
+        if (recipe == null || !FUSION_RECIPE_TYPE.equals(
+                net.minecraft.core.registries.BuiltInRegistries.RECIPE_TYPE.getKey(recipe.value().getType()))) return null;
+        var outer = new ArrayList<ItemStack>();
+        for (int i = 0; i < DraconicFusionPattern.OUTER_SLOTS; i++)
+            if (!inputs[i].isEmpty()) outer.add(inputs[i]);
+        return tryMatchFusionRecipe(recipe, outer, inputs[DraconicFusionPattern.OUTER_SLOTS], level);
     }
 
     public static @Nullable DraconicFusionRecipeMatch findRecipe(List<ItemStack> outerInputs, ItemStack catalyst, Level level) {
@@ -47,144 +63,49 @@ public final class DraconicFusionRecipeHelper {
         return null;
     }
 
+    public static @Nullable IFusionRecipe currentRecipe(ResourceLocation id, Level level) {
+        if (id == null || level == null || !ModList.get().isLoaded("draconicevolution")) return null;
+        var entry = level.getRecipeManager().byKey(id).orElse(null);
+        return entry != null && entry.value() instanceof IFusionRecipe recipe ? recipe : null;
+    }
+
+    public static DraconicFusionPattern.FusionTier tier(IFusionRecipe recipe) {
+        return switch (recipe.getRecipeTier()) {
+            case CHAOTIC -> DraconicFusionPattern.FusionTier.CHAOTIC;
+            case DRACONIC -> DraconicFusionPattern.FusionTier.DRACONIC;
+            default -> DraconicFusionPattern.FusionTier.WYVERN;
+        };
+    }
+
     private static @Nullable DraconicFusionRecipeMatch tryMatchFusionRecipe(
-            RecipeHolder<?> recipeHolder,
-            List<ItemStack> outerInputs,
-            ItemStack catalyst,
-            Level level) {
-        try {
-            Recipe<?> recipe = recipeHolder.value();
-            Ingredient catalystIngredient = extractCatalystIngredient(recipe);
-            if (catalystIngredient == null || !catalystIngredient.test(catalyst)) {
-                return null;
-            }
-
-            List<Ingredient> ingredientDefs = extractIngredients(recipe);
-            if (ingredientDefs.isEmpty() || ingredientDefs.size() != outerInputs.size()) {
-                return null;
-            }
-
-            var remaining = new ArrayList<>(outerInputs.stream().filter(s -> !s.isEmpty()).map(ItemStack::copy).toList());
-            if (remaining.size() != ingredientDefs.size()) {
-                return null;
-            }
-
-            for (Ingredient ingredient : ingredientDefs) {
-                boolean found = false;
-                for (int i = 0; i < remaining.size(); i++) {
-                    if (ingredient.test(remaining.get(i))) {
-                        remaining.remove(i);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    return null;
-                }
-            }
-
-            ItemStack result = recipe.getResultItem(level.registryAccess()).copy();
-            if (result.isEmpty()) {
-                return null;
-            }
-
-            var tier = extractTier(recipe);
-            long totalEnergy = extractTotalEnergy(recipe);
-            return new DraconicFusionRecipeMatch(result, catalyst.copy(), outerInputs, tier, totalEnergy, recipeHolder.id());
-        } catch (Exception e) {
-            return null;
+            RecipeHolder<?> entry, List<ItemStack> outerInputs, ItemStack catalyst, Level level) {
+        if (!(entry.value() instanceof IFusionRecipe recipe)
+                || !recipe.getCatalyst().test(catalyst)) return null;
+        var ingredients = recipe.fusionIngredients();
+        if (ingredients.size() != outerInputs.size()) return null;
+        int[] assigned = new int[outerInputs.size()];
+        java.util.Arrays.fill(assigned, -1);
+        for (int ingredient = 0; ingredient < ingredients.size(); ingredient++) {
+            if (!assign(recipe, ingredient, outerInputs, assigned, new boolean[assigned.length])) return null;
         }
+        var consumed = new ArrayList<Boolean>();
+        for (int ingredient : assigned) consumed.add(ingredients.get(ingredient).consume());
+        var result = recipe.assemble(new FusionCraftingInventory(outerInputs, catalyst), level.registryAccess());
+        return result.isEmpty() ? null : new DraconicFusionRecipeMatch(result, catalyst.copy(), outerInputs,
+                tier(recipe), recipe.getEnergyCost(), entry.id(), List.copyOf(consumed));
     }
 
-    @SuppressWarnings("unchecked")
-    private static List<Ingredient> extractIngredients(Recipe<?> recipe) throws ReflectiveOperationException {
-        Method method = findMethod(recipe.getClass(), "fusionIngredients", "getIngredients");
-        Object value = method.invoke(recipe);
-        if (value instanceof List<?> list) {
-            List<Ingredient> out = new ArrayList<>();
-            for (Object o : list) {
-                if (o instanceof Ingredient ing && !ing.isEmpty()) {
-                    out.add(ing);
-                } else if (o != null) {
-                    Ingredient viaReflection = ingredientFromUnknown(o);
-                    if (viaReflection != null && !viaReflection.isEmpty()) {
-                        out.add(viaReflection);
-                    }
-                }
-            }
-            return out;
-        }
-        return List.of();
-    }
-
-    private static @Nullable Ingredient extractCatalystIngredient(Recipe<?> recipe) throws ReflectiveOperationException {
-        Method method = findMethod(recipe.getClass(), "catalyst", "getCatalyst");
-        Object value = method.invoke(recipe);
-        if (value instanceof Ingredient ing) {
-            return ing;
-        }
-        return ingredientFromUnknown(value);
-    }
-
-    private static DraconicFusionPattern.FusionTier extractTier(Recipe<?> recipe) {
-        try {
-            Method method = findMethod(recipe.getClass(), "getRecipeTier", "recipeTier", "tier", "getTier");
-            Object value = method.invoke(recipe);
-            if (value != null) {
-                String tierName = value.toString().toUpperCase(java.util.Locale.ROOT);
-                if (tierName.contains("CHAOTIC")) return DraconicFusionPattern.FusionTier.CHAOTIC;
-                if (tierName.contains("DRACONIC")) return DraconicFusionPattern.FusionTier.DRACONIC;
-            }
-        } catch (Exception ignored) {
-        }
-        return DraconicFusionPattern.FusionTier.WYVERN;
-    }
-
-    private static long extractTotalEnergy(Recipe<?> recipe) {
-        try {
-            Method method = findMethod(recipe.getClass(), "getEnergyCost", "getTotalEnergy", "totalEnergy", "energy", "total_energy");
-            Object value = method.invoke(recipe);
-            if (value instanceof Number n) {
-                return Math.max(0L, n.longValue());
-            }
-        } catch (Exception ignored) {
-        }
-        return 0L;
-    }
-
-    private static @Nullable Ingredient ingredientFromUnknown(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Ingredient ing) {
-            return ing;
-        }
-        try {
-            Method method = findMethod(value.getClass(), "get", "ingredient");
-            Object nested = method.invoke(value);
-            if (nested instanceof Ingredient ing) {
-                return ing;
-            }
-        } catch (Exception ignored) {
-        }
-        return null;
-    }
-
-    private static Method findMethod(Class<?> owner, String... names) throws NoSuchMethodException {
-        for (String name : names) {
-            try {
-                Method method = owner.getMethod(name);
-                method.setAccessible(true);
-                return method;
-            } catch (NoSuchMethodException ignored) {
-            }
-            try {
-                Method method = owner.getDeclaredMethod(name);
-                method.setAccessible(true);
-                return method;
-            } catch (NoSuchMethodException ignored) {
+    // Reassign previous matches when ingredients overlap, rather than greedily rejecting valid inputs.
+    private static boolean assign(IFusionRecipe recipe, int ingredient, List<ItemStack> stacks,
+            int[] assigned, boolean[] visited) {
+        for (int slot = 0; slot < stacks.size(); slot++) {
+            if (visited[slot] || !recipe.fusionIngredients().get(ingredient).get().test(stacks.get(slot))) continue;
+            visited[slot] = true;
+            if (assigned[slot] == -1 || assign(recipe, assigned[slot], stacks, assigned, visited)) {
+                assigned[slot] = ingredient;
+                return true;
             }
         }
-        throw new NoSuchMethodException("No method found on " + owner.getName());
+        return false;
     }
 }

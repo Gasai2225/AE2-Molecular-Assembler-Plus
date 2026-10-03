@@ -28,11 +28,12 @@ public class ExtremePatternEncodingTermScreen extends MEStorageScreen<ExtremePat
         var clear = new IconButton(button -> menu.clearAll()) {
             @Override
             protected Icon getIcon() {
-                return Icon.CLEAR;
+                return Icon.S_CLEAR;
             }
         };
         clear.setMessage(Component.translatable("gui.ccapplied.extreme_clear_pattern"));
         clear.setHalfSize(true);
+        clear.setDisableBackground(true);
         widgets.add("extremeClearPattern", clear);
     }
 }

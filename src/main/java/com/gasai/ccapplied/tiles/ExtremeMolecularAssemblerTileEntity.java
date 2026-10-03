@@ -86,10 +86,16 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
     public static final ResourceLocation INV_MAIN = CCApplied.makeId("extreme_molecular_assembler");
 
     private final CraftingContainer craftingInv;
-    private final AppEngInternalInventory gridInv = new AppEngInternalInventory(this, 81 + 1, 1); // 81 slots (9x9) + output
+    private final AppEngInternalInventory gridInv = new AppEngInternalInventory(this, 81 + 1, 1) {
+        @Override public int getSlotLimit(int slot) {
+            return slot == DraconicFusionPattern.OUTER_SLOTS && isTieredDraconicAssembler() ? 64 : super.getSlotLimit(slot);
+        }
+    }; // 81 slots (9x9) + output
     private final AppEngInternalInventory patternInv = new AppEngInternalInventory(this, 1, 1);
     private final InternalInventory gridInvExt = new FilteredInternalInventory(this.gridInv, new CraftingGridFilter());
     private final InternalInventory internalInv = new CombinedInternalInventory(this.gridInv, this.patternInv);
+    private final AppEngInternalInventory remainderInv = new AppEngInternalInventory(this, 81);
+    private final InternalInventory storageInv = new CombinedInternalInventory(this.internalInv, this.remainderInv);
     private final IUpgradeInventory upgrades;
     private boolean isPowered = false;
     private Direction pushDirection = null;
@@ -158,7 +164,7 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
     public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] table,
             Direction where) {
         if (this.myPattern.isEmpty()) {
-            boolean isEmpty = this.gridInv.isEmpty() && this.patternInv.isEmpty();
+            boolean isEmpty = this.gridInv.isEmpty() && this.patternInv.isEmpty() && this.remainderInv.isEmpty();
 
             if (isEmpty && patternDetails instanceof IMolecularAssemblerSupportedPattern pattern) {
                 if (canCraftPattern(pattern) && this.fillGrid(table, pattern)) {
@@ -268,11 +274,11 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
     }
 
     private boolean canPush() {
-        return !this.gridInv.getStackInSlot(81).isEmpty();
+        return !this.gridInv.getStackInSlot(81).isEmpty() || !this.remainderInv.isEmpty() || findEjectableSlot() >= 0;
     }
 
     private boolean hasMats() {
-        if (this.myPlan == null) {
+        if (this.myPlan == null || !canCraftPattern(this.myPlan)) {
             return false;
         }
 
@@ -387,6 +393,11 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
                 if (isAllowedStoredPattern(supportedPattern)) {
                     reset = false;
                     this.progress = 0;
+                    if (this.myPlan != null) {
+                        this.fusionEnergyAccumulated = 0L;
+                        this.fusionCraftTicks = 0;
+                        this.fusionAnimationRefreshTicks = 0;
+                    }
                     this.myPattern = is;
                     this.myPlan = supportedPattern;
                 }
@@ -425,7 +436,7 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
 
     @Override
     public InternalInventory getInternalInventory() {
-        return this.internalInv;
+        return this.storageInv;
     }
 
     @Override
@@ -468,6 +479,7 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
 
     @Override
     public TickRateModulation tickingRequest(IGridNode node, int ticksSinceLastCall) {
+        this.ejectHeldItems();
         if (!this.gridInv.getStackInSlot(81).isEmpty()) {
             this.pushOut(this.gridInv.getStackInSlot(81));
 
@@ -495,6 +507,11 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
         }
 
         if (!this.isAwake) {
+            return TickRateModulation.SLEEP;
+        }
+
+        if (!this.hasMats()) {
+            this.updateSleepiness();
             return TickRateModulation.SLEEP;
         }
 
@@ -535,14 +552,17 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
 
                 // Consume inputs before external insertion can trigger inventory callbacks.
                 for (int x = 0; x < this.craftingInv.getContainerSize(); x++) {
-                    this.gridInv.setItemDirect(x, craftingRemainders.get(x));
+                    this.gridInv.setItemDirect(x, craftingRemainders.slots().get(x));
+                }
+                for (int slot = 0; slot < craftingRemainders.overflow().size(); slot++) {
+                    this.remainderInv.setItemDirect(slot, craftingRemainders.overflow().get(slot));
                 }
                 this.pushOut(output.copy());
 
                 if (this.patternInv.isEmpty()) {
                     this.forcePlan = false;
                     this.myPlan = null;
-                    if (this.gridInv.isEmpty()) {
+                    if (this.gridInv.isEmpty() && this.remainderInv.isEmpty()) {
                         this.pushDirection = null;
                     }
                 }
@@ -684,18 +704,36 @@ public class ExtremeMolecularAssemblerTileEntity extends AENetworkedInvBlockEnti
         return pulled;
     }
 
-    private void ejectHeldItems() {
-        if (this.gridInv.getStackInSlot(81).isEmpty()) {
-            for (int x = 0; x < 81; x++) {
-                final ItemStack is = this.gridInv.getStackInSlot(x);
-                if (!is.isEmpty()
-                        && (this.myPlan == null || !this.myPlan.isItemValid(x, AEItemKey.of(is), this.level))) {
-                    this.gridInv.setItemDirect(81, is);
-                    this.gridInv.setItemDirect(x, ItemStack.EMPTY);
-                    this.saveChanges();
-                    return;
-                }
+    private void ejectRemainders() {
+        if (!this.gridInv.getStackInSlot(81).isEmpty()) return;
+        for (int slot = 0; slot < this.remainderInv.size(); slot++) {
+            var stack = this.remainderInv.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                this.gridInv.setItemDirect(81, stack);
+                this.remainderInv.setItemDirect(slot, ItemStack.EMPTY);
+                this.saveChanges();
+                return;
             }
+        }
+    }
+
+    private int findEjectableSlot() {
+        for (int slot = 0; slot < 81; slot++) {
+            var stack = this.gridInv.getStackInSlot(slot);
+            if (!stack.isEmpty() && (this.myPlan == null
+                    || !this.myPlan.isItemValid(slot, AEItemKey.of(stack), this.level))) return slot;
+        }
+        return -1;
+    }
+
+    private void ejectHeldItems() {
+        this.ejectRemainders();
+        if (!this.gridInv.getStackInSlot(81).isEmpty()) return;
+        int slot = findEjectableSlot();
+        if (slot >= 0) {
+            this.gridInv.setItemDirect(81, this.gridInv.getStackInSlot(slot));
+            this.gridInv.setItemDirect(slot, ItemStack.EMPTY);
+            this.saveChanges();
         }
     }
 

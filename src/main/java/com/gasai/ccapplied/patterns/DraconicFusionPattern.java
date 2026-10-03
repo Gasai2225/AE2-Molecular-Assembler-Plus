@@ -4,7 +4,6 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
-import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -33,6 +32,7 @@ public class DraconicFusionPattern implements IMolecularAssemblerSupportedPatter
     private final long totalEnergy;
     @Nullable
     private final ResourceLocation recipeId;
+    private final Level level;
 
     public DraconicFusionPattern(
             AEItemKey definition,
@@ -42,15 +42,19 @@ public class DraconicFusionPattern implements IMolecularAssemblerSupportedPatter
             ItemStack output,
             FusionTier tier,
             long totalEnergy,
-            @Nullable ResourceLocation recipeId) {
+            @Nullable ResourceLocation recipeId, Level level) {
         this.definition = java.util.Objects.requireNonNull(definition);
-        this.inputs = createInputs(sparseInputs);
-        this.outputs = sparseOutputs;
         this.inputStacks = inputs;
-        this.outputStack = output;
+        var resolved = com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.matchRecipe(recipeId, inputs, level);
+        this.outputStack = resolved == null ? output
+                : com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.withOutputIdentity(resolved.result(), output);
+        this.outputs = resolved == null ? sparseOutputs
+                : new GenericStack[] {new GenericStack(AEItemKey.of(outputStack), outputStack.getCount())};
         this.tier = tier;
         this.totalEnergy = totalEnergy;
         this.recipeId = recipeId;
+        this.level = level;
+        this.inputs = createInputs(sparseInputs);
     }
 
     @Override
@@ -87,11 +91,13 @@ public class DraconicFusionPattern implements IMolecularAssemblerSupportedPatter
     }
 
     public FusionTier getTier() {
-        return tier;
+        var recipe = com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.currentRecipe(recipeId, level);
+        return recipe == null ? tier : com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.tier(recipe);
     }
 
     public long getTotalEnergy() {
-        return totalEnergy;
+        var recipe = com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.currentRecipe(recipeId, level);
+        return recipe == null ? totalEnergy : recipe.getEnergyCost();
     }
 
     @Nullable
@@ -101,29 +107,37 @@ public class DraconicFusionPattern implements IMolecularAssemblerSupportedPatter
 
     private IInput[] createInputs(GenericStack[] sparseInputs) {
         java.util.List<IInput> inputList = new java.util.ArrayList<>();
-        for (GenericStack stack : sparseInputs) {
-            if (stack == null || !(stack.what() instanceof AEItemKey)) {
+        for (int slot = 0; slot < sparseInputs.length; slot++) {
+            GenericStack stack = sparseInputs[slot];
+            if (stack == null || !(stack.what() instanceof AEItemKey item)) {
                 continue;
             }
+            int inputSlot = slot;
+            var choices = new java.util.ArrayList<GenericStack>();
+            choices.add(new GenericStack(item, 1));
+            var clean = AEItemKey.of(new ItemStack(item.getItem()));
+            if (!item.equals(clean) && isItemValid(slot, clean, level))
+                choices.add(new GenericStack(clean, 1));
             inputList.add(new IInput() {
                 @Override
                 public GenericStack[] getPossibleInputs() {
-                    return new GenericStack[] { stack };
+                    return choices.toArray(GenericStack[]::new);
                 }
 
                 @Override
                 public long getMultiplier() {
-                    return 1;
+                    return stack.amount();
                 }
 
                 @Override
                 public boolean isValid(AEKey input, Level level) {
-                    return input instanceof AEItemKey && input.equals(stack.what());
+                    return input instanceof AEItemKey key && isItemValid(inputSlot, key, level);
                 }
 
                 @Override
                 public @Nullable AEKey getRemainingKey(AEKey template) {
-                        return template instanceof AEItemKey item ? AEItemKey.of(item.toStack().getCraftingRemainingItem()) : null;
+                    if (!consumesSlot(inputSlot, template)) return template;
+                    return template instanceof AEItemKey item ? AEItemKey.of(item.toStack().getCraftingRemainingItem()) : null;
                 }
             });
         }
@@ -138,28 +152,50 @@ public class DraconicFusionPattern implements IMolecularAssemblerSupportedPatter
                 continue;
             }
             ItemStack actual = container.getItem(i);
-            if (actual.isEmpty() || !ItemStack.isSameItemSameComponents(expected, actual) || actual.getCount() < expected.getCount()) {
+            if (actual.isEmpty() || !isItemValid(i, AEItemKey.of(actual), level) || actual.getCount() < expected.getCount()) {
                 return ItemStack.EMPTY;
             }
         }
-        return outputStack.copy();
+        var actual = new ItemStack[TOTAL_INPUT_SLOTS];
+        for (int i = 0; i < actual.length; i++)
+            actual[i] = inputStacks[i].isEmpty() ? ItemStack.EMPTY
+                    : container.getItem(i).copyWithCount(inputStacks[i].getCount());
+        var match = com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.matchRecipe(recipeId, actual, level);
+        return match != null && ItemStack.matches(outputStack,
+                com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.withOutputIdentity(match.result(), outputStack))
+                ? match.result().copy() : ItemStack.EMPTY;
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
-        var remaining = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
-        for (int slot = 0; slot < container.getContainerSize(); slot++) {
-            ItemStack actual = container.getItem(slot);
-            ItemStack expected = slot < inputStacks.length ? inputStacks[slot] : ItemStack.EMPTY;
-            if (expected.isEmpty()) {
-                remaining.set(slot, actual.copy());
-            } else if (actual.getCount() > expected.getCount()) {
-                remaining.set(slot, actual.copyWithCount(actual.getCount() - expected.getCount()));
-            } else {
-                remaining.set(slot, actual.getCraftingRemainingItem());
-            }
+    public CraftingRemainders getRemainingItems(CraftingContainer container) {
+        var actual = inputStacks.clone();
+        for (int slot = 0; slot < actual.length; slot++) {
+            if (!actual[slot].isEmpty()) actual[slot] = container.getItem(slot).copyWithCount(actual[slot].getCount());
         }
-        return remaining;
+        var match = com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.matchRecipe(recipeId, actual, level);
+        int[] consumed = new int[inputStacks.length];
+        if (match != null) {
+            int ingredient = 0;
+            for (int slot = 0; slot < OUTER_SLOTS; slot++) {
+                if (!actual[slot].isEmpty() && match.consumedIngredients().get(ingredient++)) {
+                    consumed[slot] = inputStacks[slot].getCount();
+                }
+            }
+            consumed[OUTER_SLOTS] = inputStacks[OUTER_SLOTS].getCount();
+        }
+        return CraftingRemainders.collect(container, consumed);
+    }
+
+    private boolean consumesSlot(int slot, AEKey template) {
+        if (inputStacks[slot].isEmpty()) return false;
+        if (slot == OUTER_SLOTS) return true;
+        var trial = inputStacks.clone();
+        if (template instanceof AEItemKey item) trial[slot] = item.toStack(inputStacks[slot].getCount());
+        var match = com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.matchRecipe(recipeId, trial, level);
+        if (match == null) return false;
+        int index = 0;
+        for (int i = 0; i < slot; i++) if (!inputStacks[i].isEmpty()) index++;
+        return match.consumedIngredients().get(index);
     }
 
     @Override
@@ -171,7 +207,15 @@ public class DraconicFusionPattern implements IMolecularAssemblerSupportedPatter
             return key == null;
         }
         AEItemKey expected = AEItemKey.of(inputStacks[slot]);
-        return expected != null && expected.equals(key);
+        if (expected == null || key == null || expected.getItem() != key.getItem()) return false;
+        if (expected.equals(key)) return true;
+        // Respect the recipe's NBT/component predicate instead of rejecting every initialized tool.
+        var trial = inputStacks.clone();
+        trial[slot] = key.toStack(inputStacks[slot].getCount());
+        var match = com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.matchRecipe(recipeId, trial, level);
+        // Substitutions must not silently discard modules/enchantments or change the CPU's promised output.
+        return match != null && ItemStack.matches(outputStack,
+                com.gasai.ccapplied.crafting.DraconicFusionRecipeHelper.withOutputIdentity(match.result(), outputStack));
     }
 
     @Override
@@ -181,6 +225,29 @@ public class DraconicFusionPattern implements IMolecularAssemblerSupportedPatter
 
     @Override
     public void fillCraftingGrid(KeyCounter[] table, IMolecularAssemblerSupportedPattern.CraftingGridAccessor gridAccessor) {
-        PatternInputs.fill(inputStacks, table, gridAccessor);
+        int inputIndex = 0;
+        for (int slot = 0; slot < inputStacks.length; slot++) {
+            var expected = inputStacks[slot];
+            ItemStack actual = ItemStack.EMPTY;
+            if (!expected.isEmpty()) {
+                if (inputIndex < table.length && table[inputIndex] != null) {
+                    var counter = table[inputIndex];
+                    AEItemKey selected = null;
+                    for (var entry : counter) {
+                        if (entry.getKey() instanceof AEItemKey key && entry.getLongValue() >= expected.getCount()
+                                && isItemValid(slot, key, level)) {
+                            selected = key;
+                            break;
+                        }
+                    }
+                    if (selected != null) {
+                        actual = selected.toStack(expected.getCount());
+                        counter.remove(selected, expected.getCount());
+                    }
+                }
+                inputIndex++;
+            }
+            gridAccessor.set(slot, actual);
+        }
     }
 }

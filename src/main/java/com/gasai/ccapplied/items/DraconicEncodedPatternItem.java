@@ -151,7 +151,7 @@ public class DraconicEncodedPatternItem extends EncodedPatternItem<IPatternDetai
                 outStack,
                 tier,
                 totalEnergy,
-                recipeId);
+                recipeId, level);
     }
 
     public @Nullable IPatternDetails decode(AEItemKey what, Level level) {
