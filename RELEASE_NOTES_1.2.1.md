@@ -1,21 +1,21 @@
 # AE2 Molecular Assembler Plus 1.2.1
 
-Для Forge 1.20.1–1.20.6.
+For Forge 1.20.1–1.20.6.
 
-## Исправления
+## Fixes
 
-- Исправлена повторная проверка рецептов после перезагрузки datapack: устаревший паттерн больше не может выдать другой результат.
-- Исправлено сопоставление пересекающихся ингредиентов Draconic Evolution и сохранение флага `consume`.
-- Добавлена поддержка инициализированных инструментов и предметов с NBT/модулями в Draconic Fusion без потери данных.
-- Исправлены количество катализатора и количество результата в Draconic Fusion, включая Awakened Draconium Block.
-- Сохраняются лишние ингредиенты, многоразовые компоненты, контейнеры и специальные остатки рецептов.
-- Остатки крафта теперь буферизуются, сохраняются при перезапуске, выпадают при разрушении механизма и извлекаются трубами.
-- Прогресс Draconic Fusion сбрасывается при замене паттерна и сохраняется при загрузке того же паттерна.
-- Существующий Extreme/Draconic-паттерн можно перекодировать без нового Blank Pattern.
-- Исправлены substitutions Botania для Petal Apothecary и Pure Daisy, включая разные допустимые ингредиенты в одинаковых слотах.
-- Botanical Assembler проверяет обещанный результат рецепта, сохраняет состояние задания и корректно обновляет прогресс в открытом GUI.
-- Исправлено имя сборки: `AE2 Molecular Assembler Plus-1.2.1-forge-1.20.1-1.20.6.jar`.
+- Recipes are now revalidated after a datapack reload, preventing stale patterns from producing a different result.
+- Fixed Draconic Evolution recipes with overlapping ingredients while preserving each ingredient's `consume` flag.
+- Added support for initialized tools and items containing NBT/module data in Draconic Fusion without losing their data.
+- Fixed catalyst and output stack sizes in Draconic Fusion, including the Awakened Draconium Block recipe.
+- Excess ingredients, reusable components, containers, and recipe-specific remainders are now preserved.
+- Crafting remainders are buffered, persisted across restarts, dropped when the machine is broken, and extractable through pipes.
+- Draconic Fusion progress is reset when the pattern changes and preserved when the same pattern is reloaded.
+- Existing Extreme and Draconic patterns can now be re-encoded without another Blank Pattern.
+- Fixed Botania substitutions for the Petal Apothecary and Pure Daisy, including different valid alternatives in repeated slots.
+- The Botanical Assembler now validates the promised recipe result, persists the active job, and correctly updates progress in an open GUI.
+- Fixed the build artifact name: `AE2 Molecular Assembler Plus-1.2.1-forge-1.20.1-1.20.6.jar`.
 
-## Проверки
+## Tests
 
-- Добавлены GameTests для substitutions, reload рецептов, остатков крафта, сохранения состояния, труб и повторного кодирования паттернов.
+- Added GameTests for substitutions, recipe reloads, crafting remainders, persistence, pipe extraction, and pattern re-encoding.
